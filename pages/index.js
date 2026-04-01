@@ -19,14 +19,20 @@ const MODES = {
   }
 };
 
+const REFINE_PASSWORD = "parkwaydrive";
+
 export default function Annet() {
   const [mode, setMode] = useState("chat");
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [refineUnlocked, setRefineUnlocked] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
+  const passwordRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -43,6 +49,22 @@ export default function Annet() {
     if (!ta) return;
     ta.style.height = "auto";
     ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
+  };
+
+  const handlePasswordSubmit = () => {
+    if (passwordInput.trim().toLowerCase() === REFINE_PASSWORD) {
+      setRefineUnlocked(true);
+      setPasswordError(false);
+      setPasswordInput("");
+    } else {
+      setPasswordError(true);
+      setPasswordInput("");
+      passwordRef.current?.focus();
+    }
+  };
+
+  const handlePasswordKey = (e) => {
+    if (e.key === "Enter") handlePasswordSubmit();
   };
 
   const send = async () => {
@@ -395,6 +417,77 @@ export default function Annet() {
           letter-spacing: 0.04em;
         }
 
+        /* Password gate */
+        .password-gate {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          height: 100%;
+          padding: 40px 0;
+        }
+
+        .password-gate-title {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 22px;
+          color: var(--text-mid);
+          margin-bottom: 8px;
+        }
+
+        .password-gate-sub {
+          font-size: 12px;
+          color: var(--text-dim);
+          margin-bottom: 32px;
+        }
+
+        .password-row {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+        }
+
+        .password-input {
+          background: none;
+          border: none;
+          border-bottom: 1px solid var(--border);
+          color: var(--text);
+          font-family: var(--font-mono);
+          font-size: 14px;
+          padding: 8px 0;
+          outline: none;
+          width: 200px;
+          transition: border-color 0.15s ease;
+          letter-spacing: 0.1em;
+        }
+
+        .password-input:focus { border-bottom-color: var(--accent-dim); }
+        .password-input::placeholder { color: var(--text-dim); letter-spacing: 0; }
+
+        .password-btn {
+          background: none;
+          border: 1px solid var(--border);
+          color: var(--text-dim);
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.06em;
+          padding: 7px 14px;
+          cursor: pointer;
+          border-radius: 2px;
+          transition: all 0.15s ease;
+        }
+
+        .password-btn:hover {
+          border-color: var(--accent-dim);
+          color: var(--accent);
+        }
+
+        .password-error {
+          font-size: 11px;
+          color: #c06060;
+          margin-top: 10px;
+        }
+
         @media (max-width: 600px) {
           .app { padding: 0 16px; }
           .logo { font-size: 22px; }
@@ -425,7 +518,30 @@ export default function Annet() {
 
         {/* Messages */}
         <div className="messages">
-          {isEmpty ? (
+          {mode === "refine" && !refineUnlocked ? (
+            <div className="password-gate">
+              <p className="password-gate-title">This one's just for Sooraj.</p>
+              <p className="password-gate-sub">Enter the password to continue.</p>
+              <div className="password-row">
+                <input
+                  ref={passwordRef}
+                  type="password"
+                  className="password-input"
+                  value={passwordInput}
+                  onChange={e => { setPasswordInput(e.target.value); setPasswordError(false); }}
+                  onKeyDown={handlePasswordKey}
+                  placeholder="password"
+                  autoFocus
+                />
+                <button className="password-btn" onClick={handlePasswordSubmit}>
+                  Enter
+                </button>
+              </div>
+              {passwordError && (
+                <p className="password-error">That's not it ~ try again.</p>
+              )}
+            </div>
+          ) : isEmpty ? (
             <div className="empty-state">
               <p className="empty-intro">{MODES[mode].intro}</p>
               {mode === "chat" && (
@@ -498,8 +614,10 @@ export default function Annet() {
           )}
           <div ref={bottomRef} />
         </div>
+        
 
         {/* Input */}
+        {!(mode === "refine" && !refineUnlocked) && (
         <div className="input-area">
           <div className="input-wrap">
             <textarea
@@ -531,6 +649,7 @@ export default function Annet() {
             </a>
           </div>
         </div>
+        )}
       </div>
     </>
   );
