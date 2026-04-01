@@ -547,10 +547,10 @@ export default function Annet() {
               {mode === "chat" && (
                 <div className="empty-hints">
                   {[
-                    "What do you actually think about AI replacing writers?",
+                    "What's something most people get wrong about marketing?",
                     "Why do you write?",
-                    "What's something most people get wrong about hard work?",
-                    "Tell me something you believe that most people would disagree with."
+                    "What's something you believe that most people would disagree with?",
+                    "How did an engineer end up in marketing?"
                   ].map((hint, i) => (
                     <button key={i} className="empty-hint" onClick={() => {
                       setInput(hint);
