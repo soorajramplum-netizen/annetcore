@@ -16,10 +16,16 @@ const MODES = {
     label: "What to Read",
     placeholder: "Tell me what you're in the mood for...",
     intro: "Tell me what you're looking for ~ I'll point you to something worth reading."
+  },
+  professional: {
+    label: "Professional",
+    placeholder: "Ask about Sooraj's work, skills, or experience...",
+    intro: null // rendered as a card, not a text intro
   }
 };
 
 const REFINE_PASSWORD = "parkwaydrive";
+const PROFESSIONAL_PASSWORD = "iwanttointerviewthisperson";
 
 export default function Annet() {
   const [mode, setMode] = useState("chat");
@@ -28,6 +34,7 @@ export default function Annet() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refineUnlocked, setRefineUnlocked] = useState(false);
+  const [professionalUnlocked, setProfessionalUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState(false);
   const bottomRef = useRef(null);
@@ -52,8 +59,13 @@ export default function Annet() {
   };
 
   const handlePasswordSubmit = () => {
-    if (passwordInput.trim().toLowerCase() === REFINE_PASSWORD) {
+    const val = passwordInput.trim().toLowerCase();
+    if (mode === "refine" && val === REFINE_PASSWORD) {
       setRefineUnlocked(true);
+      setPasswordError(false);
+      setPasswordInput("");
+    } else if (mode === "professional" && val === PROFESSIONAL_PASSWORD) {
+      setProfessionalUnlocked(true);
       setPasswordError(false);
       setPasswordInput("");
     } else {
@@ -488,6 +500,73 @@ export default function Annet() {
           margin-top: 10px;
         }
 
+        /* Professional card */
+        .pro-card {
+          padding: 32px 0;
+          max-width: 600px;
+        }
+
+        .pro-name {
+          font-family: var(--font-display);
+          font-size: 24px;
+          font-weight: 600;
+          color: var(--text);
+          margin-bottom: 4px;
+        }
+
+        .pro-title {
+          font-size: 12px;
+          color: var(--accent);
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          margin-bottom: 24px;
+        }
+
+        .pro-section {
+          margin-bottom: 20px;
+        }
+
+        .pro-section-label {
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--text-dim);
+          margin-bottom: 8px;
+        }
+
+        .pro-section-body {
+          font-size: 13px;
+          color: var(--text-mid);
+          line-height: 1.7;
+        }
+
+        .pro-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
+        .pro-tag {
+          font-size: 11px;
+          color: var(--text-dim);
+          border: 1px solid var(--border);
+          padding: 3px 10px;
+          border-radius: 2px;
+        }
+
+        .pro-divider {
+          height: 1px;
+          background: var(--border-light);
+          margin: 20px 0;
+        }
+
+        .pro-ask-hint {
+          font-size: 12px;
+          color: var(--text-dim);
+          margin-top: 24px;
+          font-style: italic;
+        }
+
         @media (max-width: 600px) {
           .app { padding: 0 16px; }
           .logo { font-size: 22px; }
@@ -518,9 +597,11 @@ export default function Annet() {
 
         {/* Messages */}
         <div className="messages">
-          {mode === "refine" && !refineUnlocked ? (
+          {(mode === "refine" && !refineUnlocked) || (mode === "professional" && !professionalUnlocked) ? (
             <div className="password-gate">
-              <p className="password-gate-title">This one's just for Sooraj.</p>
+              <p className="password-gate-title">
+                {mode === "professional" ? "This one's for the right people." : "This one's just for Sooraj."}
+              </p>
               <p className="password-gate-sub">Enter the password to continue.</p>
               <div className="password-row">
                 <input
@@ -543,7 +624,50 @@ export default function Annet() {
             </div>
           ) : isEmpty ? (
             <div className="empty-state">
+              {mode === "professional" ? (
+                <div className="pro-card">
+                  <div className="pro-name">Sooraj Ram</div>
+                  <div className="pro-title">Consumer Insights & Analytics · Brand Strategy</div>
+
+                  <div className="pro-section">
+                    <div className="pro-section-label">In short</div>
+                    <div className="pro-section-body">
+                      Engineer by training, marketer by practice. Works at the intersection of Consumer, Category, and Communications ~ building and growing brands with data, led by behavioural science. 5 years full-time, across FMCG, health & wellness, and research.
+                    </div>
+                  </div>
+
+                  <div className="pro-divider" />
+
+                  <div className="pro-section">
+                    <div className="pro-section-label">Experience</div>
+                    <div className="pro-section-body">
+                      Sweet Karam Coffee · Plum · Traya · CavinKare · ZoomRx · Better Mortgage Corporation
+                    </div>
+                  </div>
+
+                  <div className="pro-section">
+                    <div className="pro-section-label">Proficiencies</div>
+                    <div className="pro-tags">
+                      {["Consumer Insights", "Brand Strategy", "Data Literacy", "Behavioural Science", "Qual + Quant Research", "Category Management", "Brand Diagnostics", "Market Entry", "D2C & Ecom", "Consumer Proxy Frameworks"].map(t => (
+                        <span key={t} className="pro-tag">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pro-divider" />
+
+                  <div className="pro-section">
+                    <div className="pro-section-label">Education</div>
+                    <div className="pro-section-body">
+                      B.Tech Mechanical Engineering ~ APJ Abdul Kalam Technological University · CGPA 9.39/10 · University topper
+                    </div>
+                  </div>
+
+                  <p className="pro-ask-hint">Have a specific question about his work? Ask below.</p>
+                </div>
+              ) : (
               <p className="empty-intro">{MODES[mode].intro}</p>
+              )}
               {mode === "chat" && (
                 <div className="empty-hints">
                   {[
@@ -617,7 +741,7 @@ export default function Annet() {
         
 
         {/* Input */}
-        {!(mode === "refine" && !refineUnlocked) && (
+        {!((mode === "refine" && !refineUnlocked) || (mode === "professional" && !professionalUnlocked)) && (
         <div className="input-area">
           <div className="input-wrap">
             <textarea

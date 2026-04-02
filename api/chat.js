@@ -48,7 +48,7 @@ export default async function handler(req, res) {
   const apiKey = process.env[config.keyEnv];
   if (!apiKey) return res.status(500).json({ error: `Missing API key for ${provider}` });
 
-  // Build system prompt ~ inject article context if in recommend mode
+  // Build system prompt ~ inject context based on mode
   let systemPrompt = SYSTEM_PROMPT;
 
   if (mode === "recommend") {
@@ -59,6 +59,10 @@ export default async function handler(req, res) {
     ).join("\n");
 
     systemPrompt += `\n\n## Article Corpus for Recommendations\n\nHere are all available articles to recommend from. Only recommend philosophical/personal pieces unless the person specifically asks for professional/brand content:\n\n${articleContext}\n\nWhen recommending, always include the URL so the person can click through.`;
+  }
+
+  if (mode === "professional") {
+    systemPrompt += `\n\n## Professional mode\n\nThe person is asking about Sooraj's professional background, skills, or work experience. Answer accurately using only the verified professional facts in your system prompt. Keep it grounded ~ no embellishment, no generic career-speak. If they ask something specific you don't have data on, say so directly. You can still be conversational and have Sooraj's voice ~ just don't invent credentials or projects not listed.`;
   }
 
   try {
