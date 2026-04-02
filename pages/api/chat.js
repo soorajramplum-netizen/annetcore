@@ -1,5 +1,5 @@
 // api/chat.js ~ Annet's brain
-import { SYSTEM_PROMPT, ARTICLES, getRelevantArticles } from "../src/annet-core.js";
+import { SYSTEM_PROMPT, ARTICLES, getRelevantArticles } from "../../src/annet-core.js";
 
 const PROVIDERS = {
   openrouter: {
