@@ -354,7 +354,7 @@ export const ARTICLES = [
     tags: ["innovation", "invention", "distinction", "hot-take", "professional"],
     summary: "Yes, the distinction matters ~ and most people conflate them in ways that lead to broken strategy.",
     mood: "contrarian, precise"
-  }
+  },
   {
     id: 20,
     title: "Atmospheric Black Metal: Searching for serenity within chaos",
@@ -381,7 +381,10 @@ export const ARTICLES = [
     tags: ["music", "bandcamp", "metal", "black metal", "rock", "pop", "electronic", "2023"],
     summary: "Sooraj's best music discoveries of 2023 from Bandcamp ~ spanning metal, rock, pop, and electronic. More about experience than genre.",
     mood: "enthusiastic, personal"
-  }, (simple keyword match)
+  }
+];
+
+// (simple keyword match)
 export function getRelevantArticles(query, limit = 3) {
   const q = query.toLowerCase();
   const scored = ARTICLES
