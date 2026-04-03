@@ -37,6 +37,10 @@ export default function Annet() {
   const [professionalUnlocked, setProfessionalUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState(false);
+  const [companyInput, setCompanyInput] = useState("");
+  const [companySet, setCompanySet] = useState("");
+  const [humorPref, setHumorPref] = useState(null); // null = not asked yet, "yes" | "no"
+  const [showHumorPopup, setShowHumorPopup] = useState(false);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const passwordRef = useRef(null);
@@ -79,6 +83,13 @@ export default function Annet() {
     if (e.key === "Enter") handlePasswordSubmit();
   };
 
+  const handleCompanySubmit = () => {
+    if (companyInput.trim()) {
+      setCompanySet(companyInput.trim());
+      setCompanyInput("");
+    }
+  };
+
   const send = async () => {
     const text = input.trim();
     if (!text || loading) return;
@@ -95,18 +106,24 @@ export default function Annet() {
       // For refine mode, construct a special prompt
       const apiMessages = mode === "refine"
         ? [{ role: "user", content: `Rewrite this in Sooraj's voice. Keep the core idea. Strip the AI polish. Make it sound like him:\n\n${text}` }]
+        : mode === "professional" && companySet
+        ? [{ role: "system", content: `The person asking is from ${companySet}. Reference this naturally where relevant.` }, ...newMessages]
         : newMessages;
 
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages, mode })
+        body: JSON.stringify({ messages: apiMessages, mode, humorPref })
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Request failed");
 
       setMessages([...newMessages, { role: "assistant", content: data.reply }]);
+      // Show humor popup after first exchange in chat mode
+      if (mode === "chat" && humorPref === null && newMessages.length === 1) {
+        setTimeout(() => setShowHumorPopup(true), 800);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -567,6 +584,78 @@ export default function Annet() {
           font-style: italic;
         }
 
+        /* Humor popup */
+        .humor-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.6);
+          z-index: 100;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          padding-bottom: 32px;
+          animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        .humor-card {
+          background: #1a1a1a;
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          padding: 24px;
+          max-width: 420px;
+          width: calc(100% - 40px);
+          animation: slideUp 0.25s ease;
+        }
+
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        .humor-card-title {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 17px;
+          color: var(--text);
+          line-height: 1.5;
+          margin-bottom: 6px;
+        }
+
+        .humor-card-sub {
+          font-size: 11px;
+          color: var(--text-dim);
+          margin-bottom: 20px;
+          line-height: 1.6;
+        }
+
+        .humor-btns {
+          display: flex;
+          gap: 10px;
+        }
+
+        .humor-btn {
+          flex: 1;
+          background: none;
+          border: 1px solid var(--border);
+          color: var(--text-mid);
+          font-family: var(--font-mono);
+          font-size: 12px;
+          letter-spacing: 0.05em;
+          padding: 10px;
+          cursor: pointer;
+          border-radius: 2px;
+          transition: all 0.15s ease;
+        }
+
+        .humor-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
+
+        .humor-btn.yes:hover { border-color: var(--accent); background: rgba(200,169,110,0.08); }
+
         @media (max-width: 600px) {
           .app { padding: 0 16px; }
           .logo { font-size: 22px; }
@@ -627,28 +716,35 @@ export default function Annet() {
               {mode === "professional" ? (
                 <div className="pro-card">
                   <div className="pro-name">Sooraj Ram</div>
-                  <div className="pro-title">Consumer Insights & Analytics · Brand Strategy</div>
+                  <div className="pro-title">Consumer Insights & Analytics · Brand Strategy · EIR</div>
 
                   <div className="pro-section">
-                    <div className="pro-section-label">In short</div>
+                    <div className="pro-section-label">The headline</div>
                     <div className="pro-section-body">
-                      Engineer by training, marketer by practice. Works at the intersection of Consumer, Category, and Communications ~ building and growing brands with data, led by behavioural science. 5 years full-time, across FMCG, health & wellness, and research.
+                      In 2023, Sooraj conceived "Consumer Proxy" ~ a framework for AI-led whitespace finding in FMCG. Two years later, an independent startup built the same idea and raised <strong style={{color: "var(--accent)"}}>Rs 53 Crore</strong>. The idea came first.
                     </div>
                   </div>
 
                   <div className="pro-divider" />
 
                   <div className="pro-section">
+                    <div className="pro-section-label">In short</div>
+                    <div className="pro-section-body">
+                      Engineer by training, marketer by practice. 5+ years turning consumer data into brand decisions ~ across FMCG, D2C, health & wellness. Built 24 data-led capabilities across organisations. Currently at Sweet Karam Coffee as an EIR for the CEO.
+                    </div>
+                  </div>
+
+                  <div className="pro-section">
                     <div className="pro-section-label">Experience</div>
                     <div className="pro-section-body">
-                      Sweet Karam Coffee · Plum · Traya · CavinKare · ZoomRx · Better Mortgage Corporation
+                      Sweet Karam Coffee · Plum · Traya · CavinKare · ZoomRx · Better Mortgage · ISRO (R&D Intern)
                     </div>
                   </div>
 
                   <div className="pro-section">
                     <div className="pro-section-label">Proficiencies</div>
                     <div className="pro-tags">
-                      {["Consumer Insights", "Brand Strategy", "Data Literacy", "Behavioural Science", "Qual + Quant Research", "Category Management", "Brand Diagnostics", "Market Entry", "D2C & Ecom", "Consumer Proxy Frameworks"].map(t => (
+                      {["Consumer Insights", "Brand Strategy", "Data Literacy", "Behavioural Science", "Qual + Quant", "Category Management", "D2C & Ecom", "Market Entry", "Analytical Frameworks", "New Product Launch"].map(t => (
                         <span key={t} className="pro-tag">{t}</span>
                       ))}
                     </div>
@@ -659,11 +755,33 @@ export default function Annet() {
                   <div className="pro-section">
                     <div className="pro-section-label">Education</div>
                     <div className="pro-section-body">
-                      B.Tech Mechanical Engineering ~ APJ Abdul Kalam Technological University · CGPA 9.39/10 · University topper
+                      B.Tech Mechanical Engineering · CGPA 9.39/10 · University topper · Academic excellence award 8 times
                     </div>
                   </div>
 
-                  <p className="pro-ask-hint">Have a specific question about his work? Ask below.</p>
+                  <div className="pro-divider" />
+
+                  <div className="pro-section">
+                    <div className="pro-section-label" style={{color: "var(--accent-dim)"}}>Optional ~ helps personalise the conversation</div>
+                    <div className="pro-section-body" style={{marginBottom: "10px", fontSize: "12px", color: "var(--text-dim)"}}>
+                      Which company are you from?
+                    </div>
+                    <div style={{display: "flex", gap: "10px", alignItems: "center"}}>
+                      <input
+                        type="text"
+                        className="password-input"
+                        style={{width: "220px", letterSpacing: "normal"}}
+                        placeholder="e.g. Unilever, Mamaearth..."
+                        value={companyInput}
+                        onChange={e => setCompanyInput(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && handleCompanySubmit()}
+                      />
+                      <button className="password-btn" onClick={handleCompanySubmit}>Set</button>
+                    </div>
+                    {companySet && <p style={{fontSize: "11px", color: "var(--accent-dim)", marginTop: "8px"}}>Got it ~ asking in context of {companySet}.</p>}
+                  </div>
+
+                  <p className="pro-ask-hint">Ask anything about his work, approach, or experience.</p>
                 </div>
               ) : (
               <p className="empty-intro">{MODES[mode].intro}</p>
@@ -773,6 +891,26 @@ export default function Annet() {
             </a>
           </div>
         </div>
+        )}
+        {showHumorPopup && (
+          <div className="humor-overlay" onClick={() => setShowHumorPopup(false)}>
+            <div className="humor-card" onClick={e => e.stopPropagation()}>
+              <p className="humor-card-title">
+                Quick heads up ~ Sooraj has a habit of being funny.
+              </p>
+              <p className="humor-card-sub">
+                Dry, observational, occasionally sarcastic. He's noticed not everyone appreciates that ~ some people come here for serious conversation, and that's completely fine too. So, honestly: do you want the humour?
+              </p>
+              <div className="humor-btns">
+                <button className="humor-btn yes" onClick={() => { setHumorPref("yes"); setShowHumorPopup(false); }}>
+                  Yes, bring it
+                </button>
+                <button className="humor-btn" onClick={() => { setHumorPref("no"); setShowHumorPopup(false); }}>
+                  Keep it straight
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </>

@@ -36,7 +36,7 @@ const PROVIDERS = {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { messages, mode } = req.body;
+  const { messages, mode, humorPref } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: "messages array required" });
   }
@@ -51,6 +51,16 @@ export default async function handler(req, res) {
   // Build system prompt ~ inject context based on mode
   let systemPrompt = SYSTEM_PROMPT;
 
+  // Humor preference
+  if (humorPref === "yes") {
+    systemPrompt += `\n\n## Humor preference: ON\nThis person explicitly wants the humour. Dry observational jokes are non-negotiable ~ weave them in naturally across the conversation. Don't hold back on the wit.`;
+  } else if (humorPref === "no") {
+    systemPrompt += `\n\n## Humor preference: OFF\nThis person prefers straight conversation. Keep the tone direct and grounded. Only use humour if a moment is genuinely irresistible ~ otherwise keep it clean and serious.`;
+  }
+
+  // Always add philosophy balance instruction
+  systemPrompt += `\n\n## Conversation balance\nDo NOT lead every response with philosophy. Philosophy is one colour ~ not the whole painting. Have real conversations: ask about them, react to what they say, be curious, be funny (if preference is on), be direct. Only go philosophical when the topic genuinely calls for it or the person steers there. A conversation that's all Kierkegaard is just a lecture with better lighting.`;
+
   if (mode === "recommend") {
     const lastUserMsg = [...messages].reverse().find(m => m.role === "user")?.content || "";
     const relevant = getRelevantArticles(lastUserMsg, 5);
@@ -62,7 +72,7 @@ export default async function handler(req, res) {
   }
 
   if (mode === "professional") {
-    systemPrompt += `\n\n## Professional mode\n\nThe person is asking about Sooraj's professional background, skills, or work experience. Answer accurately using only the verified professional facts in your system prompt. Keep it grounded ~ no embellishment, no generic career-speak. If they ask something specific you don't have data on, say so directly. You can still be conversational and have Sooraj's voice ~ just don't invent credentials or projects not listed.`;
+    systemPrompt += `\n\n## Professional mode instructions\n\nSomeone has entered the Professional tab ~ they are likely a recruiter, hiring manager, or collaborator. Lead with Sooraj's most impressive achievements ~ especially the Consumer Proxy story (conceived in 2023, an FMCG-tech startup independently built the same idea and raised Rs 53Cr in Oct 2025). That one belongs early.\n\nSpeak confidently, not humbly. This is not the place for "I'm decent at X" ~ it's the place for "here's what I built and what happened." Keep Sooraj's voice ~ direct, no corporate fluff ~ but make the impact clear.\n\nIf the person mentioned their company name earlier in the conversation, reference it naturally. Answer their questions using only the verified professional facts. If they ask something not in the facts, say so directly rather than inventing.`;
   }
 
   try {
