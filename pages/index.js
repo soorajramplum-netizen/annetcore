@@ -5,7 +5,7 @@ const MODES = {
   chat: {
     label: "Talk to Annet",
     placeholder: "Say something...",
-    intro: "I'm a digital twin of Sooraj ~ you can talk to me as if you talk to him. He tends to think things through and his views can change, so I reflect that fluidity / personality. So, I may not be exact, but I’m close"
+    intro: "Another perspective. Ask me anything ~ or just talk."
   },
   refine: {
     label: "Refine Writing",
@@ -25,7 +25,7 @@ const MODES = {
 };
 
 const REFINE_PASSWORD = "parkwaydrive";
-const PROFESSIONAL_PASSWORD = "iwanttohiresooraj";
+const PROFESSIONAL_PASSWORD = "iwanttointerviewthisperson";
 
 export default function Annet() {
   const [mode, setMode] = useState("chat");
@@ -105,7 +105,6 @@ export default function Annet() {
     if (textareaRef.current) textareaRef.current.style.height = "auto";
 
     try {
-<<<<<<< HEAD
       // For refine mode, construct a proper editorial prompt
       const isRefineFeedback = mode === "refine" && lastDraft && messages.length > 0;
       const draftToUse = isRefineFeedback ? lastDraft : text;
@@ -127,11 +126,6 @@ ${draftToUse}
 ${isRefineFeedback ? `\n\nHe has reviewed the previous version and has this specific feedback ~ apply it precisely:\n"${text}"` : ""}
 
 Output the refined article only ~ no preamble, no "here's what I did", no explanation. Just the piece.` }]
-=======
-      // For refine mode, construct a special prompt
-      const apiMessages = mode === "refine"
-        ? [{ role: "user", content: `Rewrite this in Sooraj's voice. Keep the core idea. Strip the AI polish. Make it sound like him:\n\n${text}` }]
->>>>>>> parent of 6380e04 (logic update)
         : mode === "professional" && companySet
         ? [{ role: "system", content: `The person asking is from ${companySet}. Reference this naturally where relevant.` }, ...newMessages]
         : newMessages;
@@ -722,7 +716,7 @@ Output the refined article only ~ no preamble, no "here's what I did", no explan
         <header className="header">
           <div className="header-top">
             <span className="logo">Annet</span>
-            <span className="logo-tag">Sooraj's Digital Twin</span>
+            <span className="logo-tag">Another perspective</span>
           </div>
           <nav className="mode-tabs">
             {Object.entries(MODES).map(([key, val]) => (
