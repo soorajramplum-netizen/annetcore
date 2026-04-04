@@ -669,7 +669,7 @@ export default function Annet() {
         <header className="header">
           <div className="header-top">
             <span className="logo">Annet</span>
-            <span className="logo-tag">Another perspective</span>
+            <span className="logo-tag">Sooraj's Digital Twin</span>
           </div>
           <nav className="mode-tabs">
             {Object.entries(MODES).map(([key, val]) => (
