@@ -51,11 +51,6 @@ export default async function handler(req, res) {
   // Build system prompt ~ inject context based on mode
   let systemPrompt = SYSTEM_PROMPT;
 
-  // For refine mode, use a focused editorial system prompt instead of the full personality one
-  if (mode === "refine") {
-    systemPrompt = `You are a skilled editor who knows Sooraj Ram's writing intimately. You do not add your personality to the work. You serve his. Your only job is to take his raw notes and shape them into a flowing, post-worthy article that sounds exactly like him ~ not like an AI cleaned it up. Follow the instructions in the user's message precisely.`;
-  }
-
   // Humor preference
   if (humorPref === "yes") {
     systemPrompt += `\n\n## Humor preference: ON\nThis person explicitly wants the humour. Dry observational jokes are non-negotiable ~ weave them in naturally across the conversation. Don't hold back on the wit.`;
@@ -90,8 +85,8 @@ export default async function handler(req, res) {
           { role: "system", content: systemPrompt },
           ...messages
         ],
-        max_tokens: mode === "refine" ? 2500 : 1000,
-        temperature: mode === "refine" ? 0.5 : 0.8
+        max_tokens: 1000,
+        temperature: 0.8
       })
     });
 
