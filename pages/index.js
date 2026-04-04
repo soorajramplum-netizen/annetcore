@@ -5,7 +5,7 @@ const MODES = {
   chat: {
     label: "Talk to Annet",
     placeholder: "Say something...",
-    intro: "I'm a digital twin of Sooraj ~ you can talk to me as if you talk to him. He tends to think things through and his views can change, so I reflect that fluidity / personality. So, I may not be exact, but I’m close"
+    intro: "Another perspective. Ask me anything ~ or just talk."
   },
   refine: {
     label: "Refine Writing",
@@ -25,7 +25,7 @@ const MODES = {
 };
 
 const REFINE_PASSWORD = "parkwaydrive";
-const PROFESSIONAL_PASSWORD = "iwanttohiresooraj";
+const PROFESSIONAL_PASSWORD = "iwanttointerviewthisperson";
 
 export default function Annet() {
   const [mode, setMode] = useState("chat");
@@ -103,9 +103,22 @@ export default function Annet() {
     if (textareaRef.current) textareaRef.current.style.height = "auto";
 
     try {
-      // For refine mode, construct a special prompt
+      // For refine mode, construct a proper editorial prompt
       const apiMessages = mode === "refine"
-        ? [{ role: "user", content: `Rewrite this in Sooraj's voice. Keep the core idea. Strip the AI polish. Make it sound like him:\n\n${text}` }]
+        ? [{ role: "user", content: `You are editing a draft by Sooraj Ram. Your job is to turn his raw, scattered notes into a post-worthy article ~ in his exact voice. Here are your rules:
+
+WHAT TO DO:
+1. FIND THE THREAD. His notes are non-linear ~ thoughts captured as they came. Your first job is to find what the piece is actually about and build a logical flow from it. Not a listicle. Not a summary. A flowing piece with a clear arc: opening that pulls, a middle that builds, and an end that lands.
+2. KEEP HIS VOICE EXACTLY. Use the tilde (~) as he does. Short punchy sentences for points. Longer ones for building arguments. No corporate language. No hollow openers. No "In conclusion". Reference his actual phrases where they appear.
+3. BRIDGE THE GAPS. Where his thought is incomplete or jumps abruptly, write the connective tissue. But strictly: your additions must NOT exceed 10% of the total output word count. The piece must still be majority his words and ideas, just stitched properly.
+4. NEVER ADD IDEAS HE DIDN'T HAVE. You can connect, clarify, or complete a half-formed thought ~ but you cannot introduce a new argument or example he didn't gesture at. If something is missing, leave it missing rather than inventing.
+5. FORMAT LIKE HIS BLOG. No bullet points. No headers unless he used them. Paragraphs. White space. Reads like a person thinking out loud, not a content brief.
+
+Here is his raw draft:
+
+${text}
+
+Output the refined article only ~ no preamble, no "here's what I did", no explanation. Just the piece.` }]
         : mode === "professional" && companySet
         ? [{ role: "system", content: `The person asking is from ${companySet}. Reference this naturally where relevant.` }, ...newMessages]
         : newMessages;
@@ -669,7 +682,7 @@ export default function Annet() {
         <header className="header">
           <div className="header-top">
             <span className="logo">Annet</span>
-            <span className="logo-tag">Sooraj's Digital Twin</span>
+            <span className="logo-tag">Another perspective</span>
           </div>
           <nav className="mode-tabs">
             {Object.entries(MODES).map(([key, val]) => (
