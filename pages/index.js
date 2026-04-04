@@ -5,7 +5,7 @@ const MODES = {
   chat: {
     label: "Talk to Annet",
     placeholder: "Say something...",
-    intro: "I'm a digital twin of Sooraj ~ you can talk to me as if you talk to him. He tends to think things through and his views can change, so I reflect that fluidity / personality. I may not be exact, but I’m close"
+    intro: "I'm a digital twin of Sooraj ~ you can talk to me as if you talk to him. He tends to think things through and his views can change, so I reflect that fluidity / personality. So, I may not be exact, but I’m close"
   },
   refine: {
     label: "Refine Writing",
