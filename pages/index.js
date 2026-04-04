@@ -39,11 +39,11 @@ export default function Annet() {
   const [passwordError, setPasswordError] = useState(false);
   const [companyInput, setCompanyInput] = useState("");
   const [companySet, setCompanySet] = useState("");
-  const [humorPref, setHumorPref] = useState(null); // null = not asked yet, "yes" | "no"
+  const [humorPref, setHumorPref] = useState(null);
   const [showHumorPopup, setShowHumorPopup] = useState(false);
-  const bottomRef = useRef(null);
-  const textareaRef = useRef(null);
-  const passwordRef = useRef(null);
+  const [refineFeedback, setRefineFeedback] = useState("");
+  const [lastDraft, setLastDraft] = useState(""); // stores the original draft for regeneration
+  const refineFeedbackRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,6 +53,8 @@ export default function Annet() {
     setMessages([]);
     setInput("");
     setError(null);
+    setLastDraft("");
+    setRefineFeedback("");
   }, [mode]);
 
   const autoResize = () => {
@@ -104,6 +106,10 @@ export default function Annet() {
 
     try {
       // For refine mode, construct a proper editorial prompt
+      const isRefineFeedback = mode === "refine" && lastDraft && messages.length > 0;
+      const draftToUse = isRefineFeedback ? lastDraft : text;
+      if (mode === "refine" && !isRefineFeedback) setLastDraft(text);
+
       const apiMessages = mode === "refine"
         ? [{ role: "user", content: `You are editing a draft by Sooraj Ram. Your job is to turn his raw, scattered notes into a post-worthy article ~ in his exact voice. Here are your rules:
 
@@ -116,7 +122,8 @@ WHAT TO DO:
 
 Here is his raw draft:
 
-${text}
+${draftToUse}
+${isRefineFeedback ? `\n\nHe has reviewed the previous version and has this specific feedback ~ apply it precisely:\n"${text}"` : ""}
 
 Output the refined article only ~ no preamble, no "here's what I did", no explanation. Just the piece.` }]
         : mode === "professional" && companySet
@@ -451,6 +458,33 @@ Output the refined article only ~ no preamble, no "here's what I did", no explan
           color: #c06060;
           margin-top: 8px;
         }
+
+        /* Refine feedback bar */
+        .refine-feedback-wrap {
+          padding-bottom: 4px;
+        }
+
+        .refine-feedback-label {
+          font-size: 10px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--accent-dim);
+          margin-bottom: 8px;
+        }
+
+        .refine-reset-btn {
+          background: none;
+          border: none;
+          font-family: var(--font-mono);
+          font-size: 11px;
+          color: var(--text-dim);
+          cursor: pointer;
+          padding: 6px 0;
+          margin-top: 4px;
+          transition: color 0.15s ease;
+        }
+
+        .refine-reset-btn:hover { color: var(--text-mid); }
 
         .footer-note {
           font-size: 10px;
@@ -874,6 +908,36 @@ Output the refined article only ~ no preamble, no "here's what I did", no explan
         {/* Input */}
         {!((mode === "refine" && !refineUnlocked) || (mode === "professional" && !professionalUnlocked)) && (
         <div className="input-area">
+          {/* Refine feedback bar ~ appears after first rewrite */}
+          {mode === "refine" && messages.length > 0 && !loading ? (
+            <div className="refine-feedback-wrap">
+              <div className="refine-feedback-label">Not quite right?</div>
+              <div className="input-wrap">
+                <textarea
+                  ref={refineFeedbackRef}
+                  className="input-textarea"
+                  value={input}
+                  onChange={e => { setInput(e.target.value); autoResize(); }}
+                  onKeyDown={handleKey}
+                  placeholder="Tell me what to fix ~ e.g. make the opening sharper, the middle is too long, end on a stronger note..."
+                  rows={1}
+                />
+                <button
+                  className="send-btn"
+                  onClick={send}
+                  disabled={!input.trim() || loading}
+                >
+                  Refine
+                </button>
+              </div>
+              <button
+                className="refine-reset-btn"
+                onClick={() => { setMessages([]); setLastDraft(""); setInput(""); }}
+              >
+                ↺ Start over with a new draft
+              </button>
+            </div>
+          ) : (
           <div className="input-wrap">
             <textarea
               ref={textareaRef}
@@ -892,6 +956,7 @@ Output the refined article only ~ no preamble, no "here's what I did", no explan
               Send
             </button>
           </div>
+          )}
           {error && <div className="error-msg">Something went wrong ~ {error}</div>}
           <div className="footer-note">
             {mode === "chat" && "Talking to a digital twin of Sooraj Ram ~ "}{" "}
