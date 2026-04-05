@@ -948,6 +948,9 @@ export default function Annet() {
                   </div>
 
                   <div className="pro-divider" />
+
+                  <div className="pro-section">
+                    <div className="pro-section-label" style={{color: "var(--accent-dim)"}}>Optional ~ helps personalise the conversation</div>
                     <div className="pro-section-body" style={{marginBottom: "10px", fontSize: "12px", color: "var(--text-dim)"}}>
                       Which company are you from?
                     </div>
