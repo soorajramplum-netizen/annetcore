@@ -659,6 +659,68 @@ export default function Annet() {
           font-style: italic;
         }
 
+        /* Achievement list */
+        .achieve-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .achieve-item {
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+          font-size: 13px;
+          color: var(--text-mid);
+          line-height: 1.65;
+        }
+
+        .achieve-dot {
+          color: var(--accent-dim);
+          font-size: 8px;
+          margin-top: 5px;
+          flex-shrink: 0;
+        }
+
+        /* Experience list */
+        .exp-list {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .exp-item {
+          border-left: 2px solid var(--border);
+          padding-left: 12px;
+        }
+
+        .exp-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 8px;
+          margin-bottom: 3px;
+        }
+
+        .exp-role {
+          font-size: 13px;
+          color: var(--text);
+          font-weight: 500;
+        }
+
+        .exp-period {
+          font-size: 10px;
+          color: var(--text-dim);
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        .exp-org {
+          font-size: 11px;
+          color: var(--text-dim);
+          line-height: 1.5;
+        }
+
         /* Tool cards */
         .tools-grid {
           display: flex;
@@ -856,33 +918,78 @@ export default function Annet() {
                   <div className="pro-name">Sooraj Ram</div>
                   <div className="pro-title">Consumer Insights & Analytics · Brand Strategy · EIR</div>
 
+                  {/* HEADLINE */}
                   <div className="pro-section">
-                    <div className="pro-section-label">The headline</div>
+                    <div className="pro-section-label">The one thing to know</div>
                     <div className="pro-section-body">
-                      In 2023, Sooraj conceived "Consumer Proxy" ~ a framework for AI-led whitespace finding in FMCG. Two years later, an independent startup built the same idea and raised <strong style={{color: "var(--accent)"}}>Rs 53 Crore</strong>. The idea came first.
+                      In 2023, Sooraj conceived "Consumer Proxy" ~ a first-principles framework for AI-led whitespace discovery in FMCG. He built a quasi-PoC. Two years later, an independent FMCG-tech startup built the same idea from scratch and raised <strong style={{color:"var(--accent)"}}>Rs 53 Crore</strong> in Oct 2025. The idea existed first. That's the kind of thinking he brings to work.
                     </div>
                   </div>
 
                   <div className="pro-divider" />
 
+                  {/* SUMMARY */}
                   <div className="pro-section">
                     <div className="pro-section-label">In short</div>
                     <div className="pro-section-body">
-                      Engineer by training, marketer by practice. 5+ years turning consumer data into brand decisions ~ across FMCG, D2C, health & wellness. Built 24 data-led capabilities across organisations. Currently at Sweet Karam Coffee as an EIR for the CEO.
+                      Engineer by training, marketer by practice. 5 years 3 months full-time + 2 years 7 months as a freelance consultant during college ~ clientele across 7 countries. Built <strong style={{color:"var(--text)"}}>24 data-led capabilities (19 PoCs)</strong> across organisations, turning data → insight → action → revenue. Currently at Sweet Karam Coffee functioning as an EIR for the CEO ~ owning everything from product roadmap to launch to post-launch performance.
                     </div>
                   </div>
 
+                  <div className="pro-divider" />
+
+                  {/* KEY ACHIEVEMENTS */}
+                  <div className="pro-section">
+                    <div className="pro-section-label">Achievements that stand out</div>
+                    <div className="achieve-list">
+                      {[
+                        "Earned Rs 10.54L during college ~ running marketing research & growth projects across 7 countries, parallelly managing studies",
+                        "Promoted to Team Lead at Better Mortgage in under a year of joining as an Analyst ~ led 12 franchises as Senior Associate at ZoomRx shortly after",
+                        "Set up Consumer Insights from scratch at Traya ~ first person in the role. Led 2 new brand launches: Mool (Health) & Clear Ritual (Skin)",
+                        "Built a quick product testing framework at Rs 0 cost at CavinKare ~ and a D2C NPD Playbook adopted across the team",
+                        "University topper: CGPA 9.39/10 · 100% in two semesters · Academic excellence award 8 times across 4 years · 99th percentile in English nationally"
+                      ].map((a, i) => (
+                        <div key={i} className="achieve-item">
+                          <span className="achieve-dot">◆</span>
+                          <span>{a}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pro-divider" />
+
+                  {/* EXPERIENCE */}
                   <div className="pro-section">
                     <div className="pro-section-label">Experience</div>
-                    <div className="pro-section-body">
-                      Sweet Karam Coffee · Plum · Traya · CavinKare · ZoomRx · Better Mortgage · ISRO (R&D Intern)
+                    <div className="exp-list">
+                      {[
+                        { role: "Consumer & Market Intelligence", org: "Sweet Karam Coffee", period: "May '25 – Present", note: "EIR for CEO · Product roadmap · Brand · Growth · CMI CoE" },
+                        { role: "Consumer Insights, Category", org: "Plum", period: "Mar '25 – May '25", note: "Market entry · Trendspotting · Path2Purchase · TrendScore" },
+                        { role: "Consumer Insights Lead, Brand", org: "Traya", period: "May '24 – Mar '25", note: "Built insights team · 2 brand launches · Acquisition & retention" },
+                        { role: "Consumer Insights & Analytics", org: "CavinKare", period: "Dec '22 – May '24", note: "Qual + Quant · D2C/Ecom · Insights Engine · NPD Playbook" },
+                        { role: "Senior Associate, Market Research", org: "ZoomRx", period: "Jun '22 – Dec '22", note: "Led 12 franchises · Feasibility analysis · Consulting support" },
+                        { role: "Team Lead, Ops Intelligence", org: "Better Mortgage Corporation", period: "Sept '20 – Jun '22", note: "Promoted to lead in under a year" },
+                        { role: "R&D Project Intern", org: "ISRO", period: "Jan '20 – Feb '20", note: "" },
+                      ].map((e, i) => (
+                        <div key={i} className="exp-item">
+                          <div className="exp-top">
+                            <span className="exp-role">{e.role}</span>
+                            <span className="exp-period">{e.period}</span>
+                          </div>
+                          <div className="exp-org">{e.org}{e.note ? ` · ${e.note}` : ""}</div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
+                  <div className="pro-divider" />
+
+                  {/* PROFICIENCIES */}
                   <div className="pro-section">
                     <div className="pro-section-label">Proficiencies</div>
                     <div className="pro-tags">
-                      {["Consumer Insights", "Brand Strategy", "Data Literacy", "Behavioural Science", "Qual + Quant", "Category Management", "D2C & Ecom", "Market Entry", "Analytical Frameworks", "New Product Launch"].map(t => (
+                      {["Consumer Insights", "Brand Strategy", "Data Literacy", "Behavioural Science", "Qual + Quant", "Category Management", "D2C & Ecom", "Market Entry", "NPD & Launch", "Analytical Frameworks", "Trendspotting", "Comms Strategy"].map(t => (
                         <span key={t} className="pro-tag">{t}</span>
                       ))}
                     </div>
@@ -890,57 +997,33 @@ export default function Annet() {
 
                   <div className="pro-divider" />
 
+                  {/* EDUCATION */}
                   <div className="pro-section">
                     <div className="pro-section-label">Education</div>
                     <div className="pro-section-body">
-                      B.Tech Mechanical Engineering · CGPA 9.39/10 · University topper · Academic excellence award 8 times
+                      B.Tech Mechanical Engineering · APJ Abdul Kalam Technological University · CGPA 9.39/10 · University topper S5 & S8 (10/10) · Academic excellence award 8 times · 99th percentile English · 96th percentile Quantitative (Advanced)
                     </div>
                   </div>
 
                   <div className="pro-divider" />
 
+                  {/* TOOLS */}
                   <div className="pro-section">
                     <div className="pro-section-label">Tools he has built</div>
-                    <div className="pro-section-body" style={{marginBottom: "14px", fontSize: "12px", color: "var(--text-dim)"}}>
-                      Built independently ~ each solving a real gap he spotted working in consumer insights and brand strategy.
+                    <div className="pro-section-body" style={{marginBottom:"14px", fontSize:"12px", color:"var(--text-dim)"}}>
+                      Built independently ~ each one solving a gap he spotted from inside the industry.
                     </div>
                     <div className="tools-grid">
                       {[
-                        {
-                          name: "Right Copywriter",
-                          url: "https://right-copywriter.vercel.app/",
-                          problem: "AI generates text, not content. Most copy tools have no understanding of why people buy.",
-                          solution: "A behavioural science engine trained on 62 cognitive biases ~ writes copies that actually sell."
-                        },
-                        {
-                          name: "Adroit",
-                          url: "https://adroit-alpha.vercel.app/",
-                          problem: "People buy through System 1 thinking. Rarely do scripts cater to that part of the brain.",
-                          solution: "Second-by-second, shoot-ready scripts built on behavioural science with brand asset integration."
-                        },
-                        {
-                          name: "South or Not",
-                          url: "https://southproud.vercel.app/",
-                          problem: "Product ideas are easy to come by ~ especially now. But most aren't consumer-rooted. 10 launches, 1 success if lucky.",
-                          solution: "Science-led product intelligence suite for South Indian food ~ end-to-end, from concept to shelf."
-                        },
-                        {
-                          name: "Soul Scape",
-                          url: "https://soulscape-site.vercel.app/",
-                          problem: "People struggle to find the right place to go ~ and even more after they get there. 'Wish I had known this before' is the most common regret.",
-                          solution: "Spotify-like mood discovery for travel + Duolingo-style trip planning that handholds you from discovery to destination."
-                        }
+                        { name:"Right Copywriter", url:"https://right-copywriter.vercel.app/", problem:"AI generates text, not content. Most copy tools have no understanding of why people buy.", solution:"Behavioural science engine trained on 62 cognitive biases ~ writes copy that sells, not just sounds good." },
+                        { name:"Adroit", url:"https://adroit-alpha.vercel.app/", problem:"People buy through System 1 thinking. Scripts rarely cater to that part of the brain.", solution:"Second-by-second, shoot-ready scripts grounded in behavioural science with brand asset integration." },
+                        { name:"South or Not", url:"https://southproud.vercel.app/", problem:"Product ideas are easy, especially now. But most aren't consumer-rooted. 10 launches, 1 success if lucky.", solution:"Science-led product intelligence suite for South Indian food ~ end-to-end from concept to shelf." },
+                        { name:"Soul Scape", url:"https://soulscape-site.vercel.app/", problem:"People struggle to find the right place to go ~ and even more so once they get there.", solution:"Spotify-like mood discovery for travel + Duolingo-style trip planning that handholds from discovery to destination." }
                       ].map(tool => (
                         <a key={tool.name} href={tool.url} target="_blank" rel="noopener noreferrer" className="tool-card">
                           <div className="tool-name">{tool.name} ↗</div>
-                          <div className="tool-row">
-                            <span className="tool-label">Problem</span>
-                            <span className="tool-text">{tool.problem}</span>
-                          </div>
-                          <div className="tool-row">
-                            <span className="tool-label">Solution</span>
-                            <span className="tool-text">{tool.solution}</span>
-                          </div>
+                          <div className="tool-row"><span className="tool-label">Problem</span><span className="tool-text">{tool.problem}</span></div>
+                          <div className="tool-row"><span className="tool-label">Solution</span><span className="tool-text">{tool.solution}</span></div>
                         </a>
                       ))}
                     </div>
@@ -949,16 +1032,17 @@ export default function Annet() {
 
                   <div className="pro-divider" />
 
+                  {/* COMPANY INPUT */}
                   <div className="pro-section">
-                    <div className="pro-section-label" style={{color: "var(--accent-dim)"}}>Optional ~ helps personalise the conversation</div>
-                    <div className="pro-section-body" style={{marginBottom: "10px", fontSize: "12px", color: "var(--text-dim)"}}>
+                    <div className="pro-section-label" style={{color:"var(--accent-dim)"}}>Optional ~ helps personalise the conversation</div>
+                    <div className="pro-section-body" style={{marginBottom:"10px", fontSize:"12px", color:"var(--text-dim)"}}>
                       Which company are you from?
                     </div>
-                    <div style={{display: "flex", gap: "10px", alignItems: "center"}}>
+                    <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
                       <input
                         type="text"
                         className="password-input"
-                        style={{width: "220px", letterSpacing: "normal"}}
+                        style={{width:"220px", letterSpacing:"normal"}}
                         placeholder="e.g. Unilever, Mamaearth..."
                         value={companyInput}
                         onChange={e => setCompanyInput(e.target.value)}
@@ -966,7 +1050,7 @@ export default function Annet() {
                       />
                       <button className="password-btn" onClick={handleCompanySubmit}>Set</button>
                     </div>
-                    {companySet && <p style={{fontSize: "11px", color: "var(--accent-dim)", marginTop: "8px"}}>Got it ~ asking in context of {companySet}.</p>}
+                    {companySet && <p style={{fontSize:"11px", color:"var(--accent-dim)", marginTop:"8px"}}>Got it ~ asking in context of {companySet}.</p>}
                   </div>
 
                   <p className="pro-ask-hint">Ask anything about his work, approach, or experience.</p>
