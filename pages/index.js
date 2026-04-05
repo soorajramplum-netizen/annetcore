@@ -659,6 +659,69 @@ export default function Annet() {
           font-style: italic;
         }
 
+        /* Tool cards */
+        .tools-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .tool-card {
+          display: block;
+          border: 1px solid var(--border);
+          border-radius: 3px;
+          padding: 14px 16px;
+          text-decoration: none;
+          transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .tool-card:hover {
+          border-color: var(--accent-dim);
+          background: rgba(200,169,110,0.04);
+        }
+
+        .tool-name {
+          font-family: var(--font-display);
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--accent);
+          margin-bottom: 10px;
+          letter-spacing: -0.2px;
+        }
+
+        .tool-row {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 6px;
+          align-items: flex-start;
+        }
+
+        .tool-row:last-child { margin-bottom: 0; }
+
+        .tool-label {
+          font-size: 9px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--text-dim);
+          padding-top: 2px;
+          min-width: 52px;
+          flex-shrink: 0;
+        }
+
+        .tool-text {
+          font-size: 12px;
+          color: var(--text-mid);
+          line-height: 1.6;
+        }
+
+        .tool-footnote {
+          font-size: 11px;
+          color: var(--text-dim);
+          margin-top: 14px;
+          font-style: italic;
+          line-height: 1.6;
+        }
+
         /* Humor popup */
         .humor-overlay {
           position: fixed;
@@ -837,7 +900,54 @@ export default function Annet() {
                   <div className="pro-divider" />
 
                   <div className="pro-section">
-                    <div className="pro-section-label" style={{color: "var(--accent-dim)"}}>Optional ~ helps personalise the conversation</div>
+                    <div className="pro-section-label">Tools he has built</div>
+                    <div className="pro-section-body" style={{marginBottom: "14px", fontSize: "12px", color: "var(--text-dim)"}}>
+                      Built independently ~ each solving a real gap he spotted working in consumer insights and brand strategy.
+                    </div>
+                    <div className="tools-grid">
+                      {[
+                        {
+                          name: "Right Copywriter",
+                          url: "https://right-copywriter.vercel.app/",
+                          problem: "AI generates text, not content. Most copy tools have no understanding of why people buy.",
+                          solution: "A behavioural science engine trained on 62 cognitive biases ~ writes copies that actually sell."
+                        },
+                        {
+                          name: "Adroit",
+                          url: "https://adroit-alpha.vercel.app/",
+                          problem: "People buy through System 1 thinking. Rarely do scripts cater to that part of the brain.",
+                          solution: "Second-by-second, shoot-ready scripts built on behavioural science with brand asset integration."
+                        },
+                        {
+                          name: "South or Not",
+                          url: "https://southproud.vercel.app/",
+                          problem: "Product ideas are easy to come by ~ especially now. But most aren't consumer-rooted. 10 launches, 1 success if lucky.",
+                          solution: "Science-led product intelligence suite for South Indian food ~ end-to-end, from concept to shelf."
+                        },
+                        {
+                          name: "Soul Scape",
+                          url: "https://soulscape-site.vercel.app/",
+                          problem: "People struggle to find the right place to go ~ and even more after they get there. 'Wish I had known this before' is the most common regret.",
+                          solution: "Spotify-like mood discovery for travel + Duolingo-style trip planning that handholds you from discovery to destination."
+                        }
+                      ].map(tool => (
+                        <a key={tool.name} href={tool.url} target="_blank" rel="noopener noreferrer" className="tool-card">
+                          <div className="tool-name">{tool.name} ↗</div>
+                          <div className="tool-row">
+                            <span className="tool-label">Problem</span>
+                            <span className="tool-text">{tool.problem}</span>
+                          </div>
+                          <div className="tool-row">
+                            <span className="tool-label">Solution</span>
+                            <span className="tool-text">{tool.solution}</span>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                    <p className="tool-footnote">+ 10 more built for fun ~ including one called <em>Marketing BS Detector</em>. Make of that what you will.</p>
+                  </div>
+
+                  <div className="pro-divider" />
                     <div className="pro-section-body" style={{marginBottom: "10px", fontSize: "12px", color: "var(--text-dim)"}}>
                       Which company are you from?
                     </div>
