@@ -44,6 +44,9 @@ export default function Annet() {
   const [refineFeedback, setRefineFeedback] = useState("");
   const [lastDraft, setLastDraft] = useState("");
   const [refineFrom, setRefineFrom] = useState("original"); // "original" | "generated"
+  const bottomRef = useRef(null);
+  const textareaRef = useRef(null);
+  const passwordRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
