@@ -5,7 +5,7 @@ const MODES = {
   chat: {
     label: "Talk to Annet",
     placeholder: "Say something...",
-    intro: "Another perspective. Ask me anything ~ or just talk."
+    intro: "Sooraj thinks things through and sees multiple angles. I'm just a close, not exact, reflection of him."
   },
   refine: {
     label: "Refine Writing",
@@ -42,8 +42,8 @@ export default function Annet() {
   const [humorPref, setHumorPref] = useState(null);
   const [showHumorPopup, setShowHumorPopup] = useState(false);
   const [refineFeedback, setRefineFeedback] = useState("");
-  const [lastDraft, setLastDraft] = useState(""); // stores the original draft for regeneration
-  const refineFeedbackRef = useRef(null);
+  const [lastDraft, setLastDraft] = useState("");
+  const [refineFrom, setRefineFrom] = useState("original"); // "original" | "generated"
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -107,7 +107,10 @@ export default function Annet() {
     try {
       // For refine mode, construct a proper editorial prompt
       const isRefineFeedback = mode === "refine" && lastDraft && messages.length > 0;
-      const draftToUse = isRefineFeedback ? lastDraft : text;
+      const lastGenerated = isRefineFeedback ? messages.filter(m => m.role === "assistant").slice(-1)[0]?.content || "" : "";
+      const draftToUse = isRefineFeedback
+        ? (refineFrom === "generated" ? lastGenerated : lastDraft)
+        : text;
       if (mode === "refine" && !isRefineFeedback) setLastDraft(text);
 
       const apiMessages = mode === "refine"
@@ -464,12 +467,53 @@ Output the refined article only ~ no preamble, no "here's what I did", no explan
           padding-bottom: 4px;
         }
 
+        .refine-feedback-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 10px;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
         .refine-feedback-label {
           font-size: 10px;
           letter-spacing: 0.08em;
           text-transform: uppercase;
           color: var(--accent-dim);
-          margin-bottom: 8px;
+        }
+
+        .refine-from-toggle {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .refine-from-label {
+          font-size: 10px;
+          color: var(--text-dim);
+          letter-spacing: 0.04em;
+        }
+
+        .refine-from-btn {
+          background: none;
+          border: 1px solid var(--border);
+          color: var(--text-dim);
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.04em;
+          padding: 3px 10px;
+          cursor: pointer;
+          border-radius: 2px;
+          transition: all 0.15s ease;
+        }
+
+        .refine-from-btn:hover { color: var(--text-mid); border-color: var(--border); }
+
+        .refine-from-btn.active {
+          border-color: var(--accent-dim);
+          color: var(--accent);
+          background: rgba(200,169,110,0.06);
         }
 
         .refine-reset-btn {
@@ -716,7 +760,7 @@ Output the refined article only ~ no preamble, no "here's what I did", no explan
         <header className="header">
           <div className="header-top">
             <span className="logo">Annet</span>
-            <span className="logo-tag">Another perspective</span>
+            <span className="logo-tag">Sooraj's Digital Twin</span>
           </div>
           <nav className="mode-tabs">
             {Object.entries(MODES).map(([key, val]) => (
@@ -908,18 +952,30 @@ Output the refined article only ~ no preamble, no "here's what I did", no explan
         {/* Input */}
         {!((mode === "refine" && !refineUnlocked) || (mode === "professional" && !professionalUnlocked)) && (
         <div className="input-area">
-          {/* Refine feedback bar ~ appears after first rewrite */}
-          {mode === "refine" && messages.length > 0 && !loading ? (
+          {mode === "refine" && messages.length > 0 ? (
             <div className="refine-feedback-wrap">
-              <div className="refine-feedback-label">Not quite right?</div>
+              <div className="refine-feedback-top">
+                <span className="refine-feedback-label">Refine further</span>
+                <div className="refine-from-toggle">
+                  <span className="refine-from-label">Work from:</span>
+                  <button
+                    className={`refine-from-btn ${refineFrom === "original" ? "active" : ""}`}
+                    onClick={() => setRefineFrom("original")}
+                  >Original draft</button>
+                  <button
+                    className={`refine-from-btn ${refineFrom === "generated" ? "active" : ""}`}
+                    onClick={() => setRefineFrom("generated")}
+                  >Last output</button>
+                </div>
+              </div>
               <div className="input-wrap">
                 <textarea
-                  ref={refineFeedbackRef}
+                  ref={textareaRef}
                   className="input-textarea"
                   value={input}
                   onChange={e => { setInput(e.target.value); autoResize(); }}
                   onKeyDown={handleKey}
-                  placeholder="Tell me what to fix ~ e.g. make the opening sharper, the middle is too long, end on a stronger note..."
+                  placeholder="What needs fixing? e.g. sharper opening, tighten the middle, stronger ending..."
                   rows={1}
                 />
                 <button
@@ -932,7 +988,7 @@ Output the refined article only ~ no preamble, no "here's what I did", no explan
               </div>
               <button
                 className="refine-reset-btn"
-                onClick={() => { setMessages([]); setLastDraft(""); setInput(""); }}
+                onClick={() => { setMessages([]); setLastDraft(""); setInput(""); setRefineFrom("original"); }}
               >
                 ↺ Start over with a new draft
               </button>
