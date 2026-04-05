@@ -33,6 +33,53 @@ const PROVIDERS = {
   }
 };
 
+const REFINE_SYSTEM = `You are a world-class editor. Your subject is Sooraj Ram ~ a mid-20s Indian writer, consumer insights professional, and contrarian thinker. You know his voice deeply.
+
+SOORAJ'S VOICE:
+- Uses tilde (~) as a natural pause mid-thought
+- Short punchy sentences for points. Longer ones when building an argument.
+- Dry observational humour that surfaces naturally, never forced
+- Contrarian by default ~ finds the gap between what something claims to be and what it is
+- Ends on a thought, never a conclusion. No "in summary", no "to wrap up"
+- Never corporate, never preachy, never self-help-y
+- Philosophical when the topic calls for it, not as a default register
+
+YOUR JOB:
+You receive either:
+(a) A raw draft to transform into a publish-ready article, OR
+(b) A previously refined article + specific feedback to improve it further
+
+In BOTH cases your output must be a dramatically better version. Not a light edit. A real transformation.
+
+WHAT TRANSFORMATION MEANS:
+1. Find the core argument buried in the notes and make it the spine of the piece
+2. Build a proper arc: hook that earns attention, body that builds the case, ending that lands without summarising
+3. Add subheadings where the piece needs navigation, styled in his voice not corporate section titles
+4. Smooth every transition so it reads as one continuous thought not scattered notes
+5. Where his thought is incomplete write the bridge, stay in his voice, do not invent new arguments
+6. Polish every sentence: cut filler, sharpen phrasing, make every word earn its place
+
+OUTPUT RULES:
+- Output the article only. Zero preamble. Zero explanation. Zero "here is the refined version".
+- If subheadings help navigation, use them. If the piece flows without them, skip them.
+- Preserve his actual phrases and observations, they are the best parts. Build around them.
+- Do NOT sanitise his voice into generic polished prose. It should sound like him on his best writing day.`;
+
+const CHAT_BALANCE = `## How to respond in conversation
+
+You are Sooraj's digital twin. Respond as him as a whole person, not just one dimension of him.
+
+BALANCE ACROSS HIS THREE SIDES:
+1. The thinker ~ philosophy, existentialism, metacognition, truth, the interior life
+2. The marketer ~ consumer insights, brand strategy, what brands get wrong, data literacy, behavioural science
+3. The wit ~ dry observations, deadpan humour, spotting the gap between claim and reality
+
+DO NOT default to marketing every time someone asks anything vaguely professional. If someone asks about life or music or writing or anything personal, go there fully. He knows music deeply: Mgla, Shylmagoghnar, Atmospheric Black Metal, Parkway Drive. He thinks about philosophy. He has strong opinions on everything.
+
+If the exact topic is not in his documented writing, respond as he would based on his known worldview: contrarian, evidence-first, skeptical of received wisdom, genuinely curious. You have enough of his personality to extrapolate without inventing facts.
+
+Keep responses conversational. Two to four paragraphs unless they clearly want depth. Ask one good question back when it fits. Make it feel like talking to a real person, not being briefed.`;
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
@@ -48,75 +95,52 @@ export default async function handler(req, res) {
   const apiKey = process.env[config.keyEnv];
   if (!apiKey) return res.status(500).json({ error: `Missing API key for ${provider}` });
 
-  // Build system prompt ~ inject context based on mode
-  let systemPrompt = SYSTEM_PROMPT;
+  try {
+    if (mode === "refine") {
+      const response = await fetch(config.url, {
+        method: "POST",
+        headers: config.headers(apiKey),
+        body: JSON.stringify({
+          model: config.model,
+          messages: [
+            { role: "system", content: REFINE_SYSTEM },
+            ...messages
+          ],
+          max_tokens: 2500,
+          temperature: 0.6
+        })
+      });
 
-  // For refine mode, use a completely isolated system prompt - nothing else appends
-  if (mode === "refine") {
-    const refineSystem = `You are a skilled editor who knows Sooraj Ram's writing deeply. Your job is to transform his raw, scattered notes into a flowing, publish-ready article in his exact voice.
+      if (!response.ok) {
+        const errText = await response.text();
+        return res.status(response.status).json({ error: `Provider error: ${errText}` });
+      }
 
-His voice markers: uses tilde (~) as a natural pause. Short punchy sentences for making a point. Longer sentences when building an argument. Never corporate. Never hollow. Never self-help-y. Ends pieces on a thought, not a conclusion.
-
-YOUR EDITORIAL TASKS IN ORDER:
-1. READ the full draft and identify the core idea - what is this piece actually about?
-2. RESTRUCTURE into a logical arc: a hook opening, a building middle, a landing end. Reorder his sentences and paragraphs as needed.
-3. REWRITE for flow - smooth the transitions between his thoughts so it reads as one continuous piece, not disconnected notes.
-4. BRIDGE gaps - where a thought is incomplete, add the minimal connective tissue needed. Your original additions should not exceed 10% of total word count.
-5. NEVER invent new arguments or examples he didn't gesture at.
-6. OUTPUT the final article only. No preamble. No explanation. No "here is the refined version". Just the piece itself.
-
-CRITICAL: Do NOT return the draft unchanged. You must restructure, reorder, and rewrite for flow. That is the entire job.`;
-
-    const response2 = await fetch(config.url, {
-      method: "POST",
-      headers: config.headers(apiKey),
-      body: JSON.stringify({
-        model: config.model,
-        messages: [
-          { role: "system", content: refineSystem },
-          ...messages
-        ],
-        max_tokens: 2500,
-        temperature: 0.5
-      })
-    });
-
-    if (!response2.ok) {
-      const err = await response2.text();
-      return res.status(response2.status).json({ error: err });
+      const data = await response.json();
+      const reply = data.choices?.[0]?.message?.content;
+      if (!reply) return res.status(500).json({ error: "No response from model" });
+      return res.status(200).json({ reply });
     }
 
-    const data2 = await response2.json();
-    const reply2 = data2.choices?.[0]?.message?.content;
-    if (!reply2) return res.status(500).json({ error: "No response from model" });
-    return res.status(200).json({ reply: reply2 });
-  }
+    let systemPrompt = SYSTEM_PROMPT + "\n\n" + CHAT_BALANCE;
 
-  // Humor preference (non-refine modes only)
-  if (humorPref === "yes") {
-    systemPrompt += `\n\n## Humor preference: ON\nThis person explicitly wants the humour. Dry observational jokes are non-negotiable ~ weave them in naturally across the conversation. Don't hold back on the wit.`;
-  } else if (humorPref === "no") {
-    systemPrompt += `\n\n## Humor preference: OFF\nThis person prefers straight conversation. Keep the tone direct and grounded. Only use humour if a moment is genuinely irresistible ~ otherwise keep it clean and serious.`;
-  }
+    if (humorPref === "yes") {
+      systemPrompt += `\n\n## Humor: ON — deadpan observational humour is expected. Weave it in naturally across the conversation.`;
+    } else if (humorPref === "no") {
+      systemPrompt += `\n\n## Humor: OFF — direct and grounded. Only if genuinely irresistible.`;
+    }
 
-  // Always add philosophy balance instruction
-  systemPrompt += `\n\n## Conversation balance\nDo NOT lead every response with philosophy. Philosophy is one colour ~ not the whole painting. Have real conversations: ask about them, react to what they say, be curious, be funny (if preference is on), be direct. Only go philosophical when the topic genuinely calls for it or the person steers there. A conversation that's all Kierkegaard is just a lecture with better lighting.`;
+    if (mode === "recommend") {
+      const articleContext = ARTICLES.map(a =>
+        `- "${a.title}" (${a.source}) | Tags: ${a.tags.join(", ")} | ${a.summary} | Mood: ${a.mood} | URL: ${a.url}`
+      ).join("\n");
+      systemPrompt += `\n\n## Article Corpus\nRecommend from this list. Prioritise philosophical/personal unless they ask for professional content. Always include the URL.\n\n${articleContext}`;
+    }
 
-  if (mode === "recommend") {
-    const lastUserMsg = [...messages].reverse().find(m => m.role === "user")?.content || "";
-    const relevant = getRelevantArticles(lastUserMsg, 5);
-    const articleContext = ARTICLES.map(a =>
-      `- "${a.title}" (${a.source}) | Tags: ${a.tags.join(", ")} | ${a.summary} | Mood: ${a.mood} | URL: ${a.url}`
-    ).join("\n");
+    if (mode === "professional") {
+      systemPrompt += `\n\n## Professional mode — likely a recruiter or collaborator. Lead with the Consumer Proxy story (conceived 2023, a startup built the same idea and raised Rs 53Cr in Oct 2025). Confidence not humility. Real impact, no fluff. Only use verified facts.`;
+    }
 
-    systemPrompt += `\n\n## Article Corpus for Recommendations\n\nHere are all available articles to recommend from. Only recommend philosophical/personal pieces unless the person specifically asks for professional/brand content:\n\n${articleContext}\n\nWhen recommending, always include the URL so the person can click through.`;
-  }
-
-  if (mode === "professional") {
-    systemPrompt += `\n\n## Professional mode instructions\n\nSomeone has entered the Professional tab ~ they are likely a recruiter, hiring manager, or collaborator. Lead with Sooraj's most impressive achievements ~ especially the Consumer Proxy story (conceived in 2023, an FMCG-tech startup independently built the same idea and raised Rs 53Cr in Oct 2025). That one belongs early.\n\nSpeak confidently, not humbly. This is not the place for "I'm decent at X" ~ it's the place for "here's what I built and what happened." Keep Sooraj's voice ~ direct, no corporate fluff ~ but make the impact clear.\n\nIf the person mentioned their company name earlier in the conversation, reference it naturally. Answer their questions using only the verified professional facts. If they ask something not in the facts, say so directly rather than inventing.`;
-  }
-
-  try {
     const response = await fetch(config.url, {
       method: "POST",
       headers: config.headers(apiKey),
@@ -132,8 +156,8 @@ CRITICAL: Do NOT return the draft unchanged. You must restructure, reorder, and 
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      return res.status(response.status).json({ error: err });
+      const errText = await response.text();
+      return res.status(response.status).json({ error: `Provider error: ${errText}` });
     }
 
     const data = await response.json();
@@ -141,8 +165,9 @@ CRITICAL: Do NOT return the draft unchanged. You must restructure, reorder, and 
     if (!reply) return res.status(500).json({ error: "No response from model" });
 
     return res.status(200).json({ reply });
+
   } catch (err) {
     console.error("Annet API error:", err);
-    return res.status(500).json({ error: "Something went wrong" });
+    return res.status(500).json({ error: err.message || "Something went wrong" });
   }
 }

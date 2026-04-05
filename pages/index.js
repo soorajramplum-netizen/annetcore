@@ -27,6 +27,16 @@ const MODES = {
 const REFINE_PASSWORD = "parkwaydrive";
 const PROFESSIONAL_PASSWORD = "iwanttointerviewthisperson";
 
+function ThinkingText() {
+  const [phase, setPhase] = useState(0);
+  const phases = ["Annet is thinking...", "Annet is typing..."];
+  useEffect(() => {
+    const t = setInterval(() => setPhase(p => (p + 1) % 2), 1400);
+    return () => clearInterval(t);
+  }, []);
+  return <span style={{fontSize: "13px", color: "var(--text-dim)", fontStyle: "italic"}}>{phases[phase]}</span>;
+}
+
 export default function Annet() {
   const [mode, setMode] = useState("chat");
   const [messages, setMessages] = useState([]);
@@ -110,28 +120,20 @@ export default function Annet() {
     try {
       // For refine mode, construct a proper editorial prompt
       const isRefineFeedback = mode === "refine" && lastDraft && messages.length > 0;
-      const lastGenerated = isRefineFeedback ? messages.filter(m => m.role === "assistant").slice(-1)[0]?.content || "" : "";
-      const draftToUse = isRefineFeedback
+      const lastGenerated = isRefineFeedback
+        ? messages.filter(m => m.role === "assistant").slice(-1)[0]?.content || ""
+        : "";
+      const baseContent = isRefineFeedback
         ? (refineFrom === "generated" ? lastGenerated : lastDraft)
         : text;
       if (mode === "refine" && !isRefineFeedback) setLastDraft(text);
 
+      const refineUserMessage = isRefineFeedback
+        ? `Here is the article that needs further improvement:\n\n${baseContent}\n\n---\nSpecific feedback to apply:\n${text}\n\nRewrite the full article incorporating this feedback precisely. Output the improved article only.`
+        : `Transform this raw draft into a publish-ready article in Sooraj's voice:\n\n${text}`;
+
       const apiMessages = mode === "refine"
-        ? [{ role: "user", content: `You are editing a draft by Sooraj Ram. Your job is to turn his raw, scattered notes into a post-worthy article ~ in his exact voice. Here are your rules:
-
-WHAT TO DO:
-1. FIND THE THREAD. His notes are non-linear ~ thoughts captured as they came. Your first job is to find what the piece is actually about and build a logical flow from it. Not a listicle. Not a summary. A flowing piece with a clear arc: opening that pulls, a middle that builds, and an end that lands.
-2. KEEP HIS VOICE EXACTLY. Use the tilde (~) as he does. Short punchy sentences for points. Longer ones for building arguments. No corporate language. No hollow openers. No "In conclusion". Reference his actual phrases where they appear.
-3. BRIDGE THE GAPS. Where his thought is incomplete or jumps abruptly, write the connective tissue. But strictly: your additions must NOT exceed 10% of the total output word count. The piece must still be majority his words and ideas, just stitched properly.
-4. NEVER ADD IDEAS HE DIDN'T HAVE. You can connect, clarify, or complete a half-formed thought ~ but you cannot introduce a new argument or example he didn't gesture at. If something is missing, leave it missing rather than inventing.
-5. FORMAT LIKE HIS BLOG. No bullet points. No headers unless he used them. Paragraphs. White space. Reads like a person thinking out loud, not a content brief.
-
-Here is his raw draft:
-
-${draftToUse}
-${isRefineFeedback ? `\n\nHe has reviewed the previous version and has this specific feedback ~ apply it precisely:\n"${text}"` : ""}
-
-Output the refined article only ~ no preamble, no "here's what I did", no explanation. Just the piece.` }]
+        ? [{ role: "user", content: refineUserMessage }]
         : mode === "professional" && companySet
         ? [{ role: "system", content: `The person asking is from ${companySet}. Reference this naturally where relevant.` }, ...newMessages]
         : newMessages;
@@ -381,27 +383,6 @@ Output the refined article only ~ no preamble, no "here's what I did", no explan
           color: var(--text-dim);
           font-size: 12px;
           padding: 8px 0;
-        }
-
-        .loading-dots {
-          display: flex;
-          gap: 4px;
-        }
-
-        .loading-dot {
-          width: 4px;
-          height: 4px;
-          background: var(--accent-dim);
-          border-radius: 50%;
-          animation: pulse 1.2s ease-in-out infinite;
-        }
-
-        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
-        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes pulse {
-          0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
-          40% { opacity: 1; transform: scale(1); }
         }
 
         /* Input area */
@@ -938,11 +919,7 @@ Output the refined article only ~ no preamble, no "here's what I did", no explan
                 <>
                   <div className="divider" />
                   <div className="loading">
-                    <div className="loading-dots">
-                      <div className="loading-dot" />
-                      <div className="loading-dot" />
-                      <div className="loading-dot" />
-                    </div>
+                    <ThinkingText />
                   </div>
                 </>
               )}
