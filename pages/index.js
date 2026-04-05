@@ -288,9 +288,8 @@ export default function Annet() {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          justify-content: center;
-          height: 100%;
-          padding: 40px 0;
+          justify-content: flex-start;
+          padding: 8px 0 40px;
         }
 
         .empty-intro {
@@ -526,8 +525,7 @@ export default function Annet() {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          justify-content: center;
-          height: 100%;
+          justify-content: flex-start;
           padding: 40px 0;
         }
 
@@ -596,6 +594,12 @@ export default function Annet() {
         .pro-card {
           padding: 32px 0;
           max-width: 600px;
+        }
+
+        .pro-card {
+          width: 100%;
+          padding-top: 4px;
+          padding-bottom: 40px;
         }
 
         .pro-name {
@@ -723,9 +727,13 @@ export default function Annet() {
 
         /* Tool cards */
         .tools-grid {
-          display: flex;
-          flex-direction: column;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
           gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+          .tools-grid { grid-template-columns: 1fr; }
         }
 
         .tool-card {
