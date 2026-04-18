@@ -20,12 +20,18 @@ const MODES = {
   professional: {
     label: "Professional",
     placeholder: "Ask about Sooraj's work, skills, or experience...",
-    intro: null // rendered as a card, not a text intro
+    intro: null
+  },
+  feed: {
+    label: "🧠 Brain",
+    placeholder: "",
+    intro: null
   }
 };
 
 const REFINE_PASSWORD = "parkwaydrive";
 const PROFESSIONAL_PASSWORD = "iwanttointerviewthisperson";
+const FEED_PASSWORD = "9567083285";
 
 function ThinkingText() {
   const [phase, setPhase] = useState(0);
@@ -53,7 +59,16 @@ export default function Annet() {
   const [showHumorPopup, setShowHumorPopup] = useState(false);
   const [refineFeedback, setRefineFeedback] = useState("");
   const [lastDraft, setLastDraft] = useState("");
-  const [refineFrom, setRefineFrom] = useState("original"); // "original" | "generated"
+  const [refineFrom, setRefineFrom] = useState("original");
+  const [feedUnlocked, setFeedUnlocked] = useState(false);
+  const [feedText, setFeedText] = useState("");
+  const [feedUrl, setFeedUrl] = useState("");
+  const [feedFile, setFeedFile] = useState(null);
+  const [feedLoading, setFeedLoading] = useState(false);
+  const [feedResult, setFeedResult] = useState(null);
+  const [feedError, setFeedError] = useState(null);
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncResult, setSyncResult] = useState(null); // "original" | "generated"
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const passwordRef = useRef(null);
@@ -80,16 +95,13 @@ export default function Annet() {
   const handlePasswordSubmit = () => {
     const val = passwordInput.trim().toLowerCase();
     if (mode === "refine" && val === REFINE_PASSWORD) {
-      setRefineUnlocked(true);
-      setPasswordError(false);
-      setPasswordInput("");
+      setRefineUnlocked(true); setPasswordError(false); setPasswordInput("");
     } else if (mode === "professional" && val === PROFESSIONAL_PASSWORD) {
-      setProfessionalUnlocked(true);
-      setPasswordError(false);
-      setPasswordInput("");
+      setProfessionalUnlocked(true); setPasswordError(false); setPasswordInput("");
+    } else if (mode === "feed" && val === FEED_PASSWORD) {
+      setFeedUnlocked(true); setPasswordError(false); setPasswordInput("");
     } else {
-      setPasswordError(true);
-      setPasswordInput("");
+      setPasswordError(true); setPasswordInput("");
       passwordRef.current?.focus();
     }
   };
@@ -99,10 +111,47 @@ export default function Annet() {
   };
 
   const handleCompanySubmit = () => {
-    if (companyInput.trim()) {
-      setCompanySet(companyInput.trim());
-      setCompanyInput("");
-    }
+    if (companyInput.trim()) { setCompanySet(companyInput.trim()); setCompanyInput(""); }
+  };
+
+  const handleFeedIngest = async (type) => {
+    setFeedLoading(true); setFeedResult(null); setFeedError(null);
+    try {
+      let body = { password: FEED_PASSWORD, type };
+      if (type === "text") {
+        if (!feedText.trim()) { setFeedError("Paste some content first."); setFeedLoading(false); return; }
+        body.content = feedText.trim();
+      } else if (type === "url") {
+        if (!feedUrl.trim()) { setFeedError("Enter a URL first."); setFeedLoading(false); return; }
+        body.url = feedUrl.trim();
+      } else if (type === "document") {
+        if (!feedFile) { setFeedError("Choose a file first."); setFeedLoading(false); return; }
+        const text = await feedFile.text();
+        body.content = text;
+        body.filename = feedFile.name;
+      }
+      const res = await fetch("/api/ingest", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Ingestion failed");
+      setFeedResult(data.message);
+      if (type === "text") setFeedText("");
+      if (type === "url") setFeedUrl("");
+      if (type === "document") setFeedFile(null);
+    } catch (err) { setFeedError(err.message); }
+    finally { setFeedLoading(false); }
+  };
+
+  const handleSync = async () => {
+    setSyncLoading(true); setSyncResult(null);
+    try {
+      const res = await fetch("/api/sync", { method: "POST" });
+      const data = await res.json();
+      setSyncResult(`Sync done ~ ${data.ingested} new, ${data.skipped} already known${data.errors > 0 ? `, ${data.errors} errors` : ""}.`);
+    } catch { setSyncResult("Sync failed ~ try again."); }
+    finally { setSyncLoading(false); }
   };
 
   const send = async () => {
@@ -792,6 +841,149 @@ export default function Annet() {
           line-height: 1.6;
         }
 
+        /* Feed / Brain tab */
+        .feed-card {
+          width: 100%;
+          padding-top: 4px;
+          padding-bottom: 40px;
+        }
+
+        .feed-title {
+          font-family: var(--font-display);
+          font-size: 24px;
+          font-weight: 600;
+          color: var(--text);
+          margin-bottom: 4px;
+        }
+
+        .feed-subtitle {
+          font-size: 12px;
+          color: var(--text-dim);
+          margin-bottom: 24px;
+          line-height: 1.6;
+        }
+
+        .feed-section { margin-bottom: 4px; }
+
+        .feed-section-label {
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--text-dim);
+          margin-bottom: 6px;
+        }
+
+        .feed-section-body {
+          font-size: 12px;
+          color: var(--text-dim);
+          line-height: 1.6;
+          margin-bottom: 10px;
+        }
+
+        .feed-divider {
+          height: 1px;
+          background: var(--border-light);
+          margin: 20px 0;
+        }
+
+        .feed-row {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-bottom: 10px;
+        }
+
+        .feed-source {
+          font-size: 11px;
+          color: var(--accent-dim);
+          border: 1px solid var(--border);
+          padding: 3px 10px;
+          border-radius: 2px;
+        }
+
+        .feed-textarea {
+          width: 100%;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 3px;
+          color: var(--text);
+          font-family: var(--font-mono);
+          font-size: 13px;
+          line-height: 1.6;
+          padding: 10px 12px;
+          resize: vertical;
+          outline: none;
+          margin-bottom: 10px;
+          transition: border-color 0.15s ease;
+        }
+
+        .feed-textarea:focus { border-color: var(--accent-dim); }
+        .feed-textarea::placeholder { color: var(--text-dim); }
+
+        .feed-input {
+          width: 100%;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 3px;
+          color: var(--text);
+          font-family: var(--font-mono);
+          font-size: 13px;
+          padding: 8px 12px;
+          outline: none;
+          margin-bottom: 10px;
+          transition: border-color 0.15s ease;
+        }
+
+        .feed-input:focus { border-color: var(--accent-dim); }
+        .feed-input::placeholder { color: var(--text-dim); }
+
+        .feed-btn {
+          background: none;
+          border: 1px solid var(--border);
+          color: var(--text-mid);
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.06em;
+          padding: 7px 16px;
+          cursor: pointer;
+          border-radius: 2px;
+          transition: all 0.15s ease;
+          display: block;
+        }
+
+        .feed-btn:hover:not(:disabled) {
+          border-color: var(--accent-dim);
+          color: var(--accent);
+        }
+
+        .feed-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        .feed-file-label {
+          display: inline-block;
+          border: 1px dashed var(--border);
+          border-radius: 3px;
+          padding: 10px 16px;
+          font-size: 12px;
+          color: var(--text-dim);
+          cursor: pointer;
+          margin-bottom: 10px;
+          transition: all 0.15s ease;
+        }
+
+        .feed-file-label:hover { border-color: var(--accent-dim); color: var(--accent); }
+
+        .feed-success {
+          font-size: 12px;
+          color: #4a9;
+          line-height: 1.5;
+        }
+
+        .feed-error {
+          font-size: 12px;
+          color: #c06060;
+          line-height: 1.5;
+        }
+
         /* Humor popup */
         .humor-overlay {
           position: fixed;
@@ -894,10 +1086,10 @@ export default function Annet() {
 
         {/* Messages */}
         <div className="messages">
-          {(mode === "refine" && !refineUnlocked) || (mode === "professional" && !professionalUnlocked) ? (
+          {(mode === "refine" && !refineUnlocked) || (mode === "professional" && !professionalUnlocked) || (mode === "feed" && !feedUnlocked) ? (
             <div className="password-gate">
               <p className="password-gate-title">
-                {mode === "professional" ? "This one's for the right people." : "This one's just for Sooraj."}
+                {mode === "feed" ? "Here is where Sooraj's Brain lives." : mode === "professional" ? "This one's for the right people." : "This one's just for Sooraj."}
               </p>
               <p className="password-gate-sub">Enter the password to continue.</p>
               <div className="password-row">
@@ -1063,6 +1255,81 @@ export default function Annet() {
 
                   <p className="pro-ask-hint">Ask anything about his work, approach, or experience.</p>
                 </div>
+              ) : mode === "feed" ? (
+                <div className="feed-card">
+                  <div className="feed-title">Sooraj's Brain</div>
+                  <div className="feed-subtitle">Whatever you add here ~ Annet learns. Permanently.</div>
+
+                  <div className="feed-section">
+                    <div className="feed-section-label">Auto-sync</div>
+                    <div className="feed-section-body">Runs daily at 2am and picks up new posts from your blog and Medium automatically. You don't need to do anything.</div>
+                    <div className="feed-row">
+                      <span className="feed-source">lifein20s.home.blog</span>
+                      <span className="feed-source">medium.com/@nytt_liv</span>
+                    </div>
+                    <button className="feed-btn" onClick={handleSync} disabled={syncLoading}>
+                      {syncLoading ? "Syncing..." : "↻ Run sync now"}
+                    </button>
+                    {syncResult && <p className="feed-success">{syncResult}</p>}
+                  </div>
+
+                  <div className="feed-divider" />
+
+                  <div className="feed-section">
+                    <div className="feed-section-label">Paste text</div>
+                    <div className="feed-section-body">Notes, thoughts, conversations, anything.</div>
+                    <textarea
+                      className="feed-textarea"
+                      value={feedText}
+                      onChange={e => setFeedText(e.target.value)}
+                      placeholder="Paste any text ~ raw notes, a draft, a conversation..."
+                      rows={4}
+                    />
+                    <button className="feed-btn" onClick={() => handleFeedIngest("text")} disabled={feedLoading}>
+                      {feedLoading ? "Adding..." : "Add to Brain"}
+                    </button>
+                  </div>
+
+                  <div className="feed-divider" />
+
+                  <div className="feed-section">
+                    <div className="feed-section-label">Add by URL</div>
+                    <div className="feed-section-body">Any link ~ Annet will fetch and learn from it.</div>
+                    <input
+                      type="text"
+                      className="feed-input"
+                      value={feedUrl}
+                      onChange={e => setFeedUrl(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && handleFeedIngest("url")}
+                      placeholder="https://..."
+                    />
+                    <button className="feed-btn" onClick={() => handleFeedIngest("url")} disabled={feedLoading}>
+                      {feedLoading ? "Fetching..." : "Fetch & Add"}
+                    </button>
+                  </div>
+
+                  <div className="feed-divider" />
+
+                  <div className="feed-section">
+                    <div className="feed-section-label">Upload document</div>
+                    <div className="feed-section-body">Any .txt or .md file.</div>
+                    <label className="feed-file-label">
+                      <input
+                        type="file"
+                        accept=".txt,.md,.csv"
+                        style={{display:"none"}}
+                        onChange={e => setFeedFile(e.target.files[0] || null)}
+                      />
+                      {feedFile ? `✓ ${feedFile.name}` : "Choose file"}
+                    </label>
+                    <button className="feed-btn" onClick={() => handleFeedIngest("document")} disabled={feedLoading || !feedFile}>
+                      {feedLoading ? "Processing..." : "Add Document"}
+                    </button>
+                  </div>
+
+                  {feedResult && <p className="feed-success" style={{marginTop:"16px"}}>✓ {feedResult}</p>}
+                  {feedError && <p className="feed-error" style={{marginTop:"16px"}}>✗ {feedError}</p>}
+                </div>
               ) : (
               <p className="empty-intro">{MODES[mode].intro}</p>
               )}
@@ -1135,7 +1402,7 @@ export default function Annet() {
         
 
         {/* Input */}
-        {!((mode === "refine" && !refineUnlocked) || (mode === "professional" && !professionalUnlocked)) && (
+        {!((mode === "refine" && !refineUnlocked) || (mode === "professional" && !professionalUnlocked) || mode === "feed") && (
         <div className="input-area">
           {mode === "refine" && messages.length > 0 ? (
             <div className="refine-feedback-wrap">

@@ -1,5 +1,6 @@
 // api/chat.js ~ Annet's brain
 import { SYSTEM_PROMPT, ARTICLES, getRelevantArticles } from "../../src/annet-core.js";
+import { retrieveRelevantChunks } from "../../src/knowledge.js";
 
 const PROVIDERS = {
   openrouter: {
@@ -96,6 +97,17 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: `Missing API key for ${provider}` });
 
   try {
+    // ── Retrieve relevant knowledge chunks ───────────────────────────────────
+    let retrievedContext = "";
+    if (mode !== "refine") {
+      const lastUserMsg = [...messages].filter(m => m.role === "user").slice(-1)[0]?.content || "";
+      if (lastUserMsg.length > 10) {
+        const chunks = await retrieveRelevantChunks(lastUserMsg, 4);
+        if (chunks.length > 0) {
+          retrievedContext = `\n\n## From Sooraj's actual writing (retrieved for this question):\n${chunks.map((c, i) => `[${i+1}] ${c}`).join("\n\n")}`;
+        }
+      }
+    }
     if (mode === "refine") {
       const response = await fetch(config.url, {
         method: "POST",
@@ -122,7 +134,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ reply });
     }
 
-    let systemPrompt = SYSTEM_PROMPT + "\n\n" + CHAT_BALANCE;
+    let systemPrompt = SYSTEM_PROMPT + "\n\n" + CHAT_BALANCE + retrievedContext;
 
     if (humorPref === "yes") {
       systemPrompt += `\n\n## Humor: ON — deadpan observational humour is expected. Weave it in naturally across the conversation.`;
