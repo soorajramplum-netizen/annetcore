@@ -126,8 +126,18 @@ export default function Annet() {
         body.url = feedUrl.trim();
       } else if (type === "document") {
         if (!feedFile) { setFeedError("Choose a file first."); setFeedLoading(false); return; }
-        const text = await feedFile.text();
-        body.content = text;
+        const text = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result);
+          reader.onerror = () => reject(new Error("Could not read file"));
+          reader.readAsText(feedFile, "UTF-8");
+        });
+        if (!text || text.trim().length < 5) {
+          setFeedError("File appears empty or unreadable. Try a .txt file.");
+          setFeedLoading(false);
+          return;
+        }
+        body.content = text.trim();
         body.filename = feedFile.name;
       }
       const res = await fetch("/api/ingest", {

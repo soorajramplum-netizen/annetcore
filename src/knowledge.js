@@ -32,7 +32,7 @@ export function chunkText(text, chunkSize = 400, overlap = 50) {
   let i = 0;
   while (i < words.length) {
     const chunk = words.slice(i, i + chunkSize).join(" ");
-    if (chunk.trim().length > 40) chunks.push(chunk); // skip tiny chunks
+    if (chunk.trim().length > 10) chunks.push(chunk); // skip tiny chunks
     i += chunkSize - overlap;
   }
   return chunks;

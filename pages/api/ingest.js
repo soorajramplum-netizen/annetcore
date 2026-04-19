@@ -24,15 +24,13 @@ export default async function handler(req, res) {
     let sourceUrl = null;
 
     if (type === "text") {
-      // Direct text paste
-      if (!content || content.trim().length < 20) {
+      if (!content || content.trim().length < 5) {
         return res.status(400).json({ error: "Content too short" });
       }
       text = content.trim();
       source = "paste";
 
     } else if (type === "url") {
-      // Fetch from URL
       if (!url) return res.status(400).json({ error: "URL required" });
       text = await fetchUrlText(url);
       source = url.includes("medium.com") ? "medium" :
@@ -40,8 +38,7 @@ export default async function handler(req, res) {
       sourceUrl = url;
 
     } else if (type === "document") {
-      // Plain text extracted from file (client sends extracted text)
-      if (!content || content.trim().length < 20) {
+      if (!content || content.trim().length < 5) {
         return res.status(400).json({ error: "Document content too short" });
       }
       text = content.trim();
