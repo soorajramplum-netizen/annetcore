@@ -6,23 +6,36 @@ const GEMINI_KEY   = process.env.GEMINI_API_KEY;
 
 // ── Embed text using Gemini text-embedding-004 ───────────────────────────────
 export async function embedText(text) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "models/text-embedding-004",
-        content: { parts: [{ text }] }
-      })
+  // Try primary model first, fall back to alternate name
+  const models = ["text-embedding-004", "embedding-001"];
+  
+  for (const model of models) {
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1/models/${model}:embedContent?key=${GEMINI_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: `models/${model}`,
+            content: { parts: [{ text }] }
+          })
+        }
+      );
+      if (!res.ok) {
+        const err = await res.text();
+        // If 404, try next model
+        if (res.status === 404) continue;
+        throw new Error(`Gemini embedding error: ${err}`);
+      }
+      const data = await res.json();
+      return data.embedding.values;
+    } catch (e) {
+      if (e.message.includes("404") || e.message.includes("not found")) continue;
+      throw e;
     }
-  );
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Gemini embedding error: ${err}`);
   }
-  const data = await res.json();
-  return data.embedding.values; // array of 768 floats
+  throw new Error("No working Gemini embedding model found. Check your GEMINI_API_KEY.");
 }
 
 // ── Chunk text into overlapping pieces ──────────────────────────────────────
