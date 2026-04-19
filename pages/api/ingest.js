@@ -2,7 +2,7 @@
 
 import { chunkText, storeChunks, fetchUrlText } from "../../src/knowledge.js";
 
-const INGEST_PASSWORD = process.env.INGEST_PASSWORD;
+const INGEST_PASSWORD = process.env.INGEST_PASSWORD || "9567083285";
 
 export const config = {
   api: { bodyParser: { sizeLimit: "10mb" } }
