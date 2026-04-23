@@ -65,7 +65,6 @@ export async function retrieveRelevantChunks(query, limit = 4) {
   try {
     if (!SUPABASE_URL || !SUPABASE_KEY) return [];
 
-    // Extract meaningful keywords (strip common words)
     const stopWords = new Set(["the","a","an","is","are","was","were","be","been","being",
       "have","has","had","do","does","did","will","would","could","should","may","might",
       "shall","can","need","dare","ought","used","to","of","in","for","on","with","at",
@@ -73,21 +72,20 @@ export async function retrieveRelevantChunks(query, limit = 4) {
       "which","that","this","these","those","i","me","my","we","our","you","your","he",
       "she","it","they","them","their","and","or","but","if","then","so","yet","nor"]);
 
+    // Lower minimum keyword length to 3 so words like "sea", "gym", "art" get caught
     const keywords = query
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, " ")
       .split(/\s+/)
-      .filter(w => w.length > 3 && !stopWords.has(w))
-      .slice(0, 6); // top 6 keywords
+      .filter(w => w.length > 2 && !stopWords.has(w))
+      .slice(0, 8);
 
     if (keywords.length === 0) return [];
 
-    // Use Supabase full-text search via ilike for each keyword
-    // Build OR conditions: content.ilike.*keyword*
     const filters = keywords.map(k => `content.ilike.*${k}*`).join(",");
 
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/knowledge_chunks?or=(${encodeURIComponent(filters)})&select=content,source,source_url&limit=${limit * 3}&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/knowledge_chunks?or=(${encodeURIComponent(filters)})&select=content,source,source_url&limit=${limit * 4}&order=created_at.desc`,
       {
         headers: {
           "apikey": SUPABASE_KEY,
@@ -100,14 +98,17 @@ export async function retrieveRelevantChunks(query, limit = 4) {
     const data = await res.json();
     if (!data || data.length === 0) return [];
 
-    // Score by how many keywords appear in each chunk
+    // Score by keyword density
     const scored = data.map(row => {
       const text = row.content.toLowerCase();
-      const score = keywords.filter(k => text.includes(k)).length;
+      const score = keywords.reduce((acc, k) => {
+        // Count occurrences, not just presence
+        const matches = (text.match(new RegExp(k, "g")) || []).length;
+        return acc + matches;
+      }, 0);
       return { content: row.content, score };
     });
 
-    // Sort by score, return top chunks
     return scored
       .filter(r => r.score > 0)
       .sort((a, b) => b.score - a.score)
@@ -115,18 +116,27 @@ export async function retrieveRelevantChunks(query, limit = 4) {
       .map(r => r.content);
 
   } catch {
-    return []; // fail silently ~ never break chat
+    return [];
   }
 }
 
 // ── Fetch and clean text from a URL ─────────────────────────────────────────
 export async function fetchUrlText(url) {
-  const res = await fetch(url, {
+  // Medium blocks server-side fetching ~ route through Freedium mirror
+  const fetchUrl = url.includes("medium.com")
+    ? `https://freedium-mirror.cfd/${url}`
+    : url;
+
+  const res = await fetch(fetchUrl, {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; Annet-Sync/1.0)" }
   });
-  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
+  if (!res.ok) throw new Error(`Failed to fetch ${fetchUrl}: ${res.status}`);
   const html = await res.text();
-  const text = html
+  // Remove Freedium donation banners and nav if present
+  const cleanedHtml = html
+    .replace(/Milestone:[\s\S]*?Close/gi, "")
+    .replace(/Patreon[\s\S]*?paypal[\s\S]*?Go to the original/gi, "");
+  const text = cleanedHtml
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<[^>]+>/g, " ")

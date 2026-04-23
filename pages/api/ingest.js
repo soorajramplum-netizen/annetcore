@@ -32,10 +32,11 @@ export default async function handler(req, res) {
 
     } else if (type === "url") {
       if (!url) return res.status(400).json({ error: "URL required" });
+      // Medium URLs routed through Freedium automatically in fetchUrlText
       text = await fetchUrlText(url);
       source = url.includes("medium.com") ? "medium" :
                url.includes("home.blog")  ? "blog"   : "url";
-      sourceUrl = url;
+      sourceUrl = url; // store original URL for deduplication
 
     } else if (type === "document") {
       if (!content || content.trim().length < 5) {
