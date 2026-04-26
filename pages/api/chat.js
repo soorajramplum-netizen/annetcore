@@ -3,17 +3,6 @@ import { SYSTEM_PROMPT, ARTICLES, getRelevantArticles } from "../../src/annet-co
 import { retrieveRelevantChunks } from "../../src/knowledge.js";
 
 const PROVIDERS = {
-  openrouter: {
-    url: "https://openrouter.ai/api/v1/chat/completions",
-    model: process.env.AI_MODEL || "meta-llama/llama-3.3-70b-instruct",
-    headers: (key) => ({
-      "Authorization": `Bearer ${key}`,
-      "HTTP-Referer": "https://annet.vercel.app",
-      "X-Title": "Annet ~ Sooraj's Digital Twin",
-      "Content-Type": "application/json"
-    }),
-    keyEnv: "OPENROUTER_API_KEY"
-  },
   groq: {
     url: "https://api.groq.com/openai/v1/chat/completions",
     model: process.env.AI_MODEL || "llama-3.3-70b-versatile",
@@ -24,15 +13,70 @@ const PROVIDERS = {
     keyEnv: "GROQ_API_KEY"
   },
   gemini: {
-    url: `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`,
+    url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
     model: process.env.AI_MODEL || "gemini-2.0-flash",
     headers: (key) => ({
       "Authorization": `Bearer ${key}`,
       "Content-Type": "application/json"
     }),
     keyEnv: "GEMINI_API_KEY"
+  },
+  openrouter: {
+    url: "https://openrouter.ai/api/v1/chat/completions",
+    model: process.env.AI_MODEL || "meta-llama/llama-3.3-70b-instruct",
+    headers: (key) => ({
+      "Authorization": `Bearer ${key}`,
+      "HTTP-Referer": "https://annet.vercel.app",
+      "X-Title": "Annet ~ Sooraj's Digital Twin",
+      "Content-Type": "application/json"
+    }),
+    keyEnv: "OPENROUTER_API_KEY"
   }
 };
+
+// Provider fallback order ~ tries each until one works
+const PROVIDER_ORDER = (process.env.AI_PROVIDER || "groq") === "groq"
+  ? ["groq", "gemini", "openrouter"]
+  : (process.env.AI_PROVIDER || "groq") === "gemini"
+  ? ["gemini", "groq", "openrouter"]
+  : ["openrouter", "groq", "gemini"];
+
+async function callAI(messages, maxTokens = 1000, temperature = 0.8) {
+  const errors = [];
+  for (const providerName of PROVIDER_ORDER) {
+    const config = PROVIDERS[providerName];
+    const apiKey = process.env[config.keyEnv];
+    if (!apiKey) continue; // skip if no key configured
+
+    try {
+      const res = await fetch(config.url, {
+        method: "POST",
+        headers: config.headers(apiKey),
+        body: JSON.stringify({
+          model: config.model,
+          messages,
+          max_tokens: maxTokens,
+          temperature
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        errors.push(`${providerName}: ${err}`);
+        continue; // try next provider
+      }
+
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content;
+      if (!reply) { errors.push(`${providerName}: empty response`); continue; }
+      return reply;
+    } catch (e) {
+      errors.push(`${providerName}: ${e.message}`);
+      continue;
+    }
+  }
+  throw new Error(`All providers failed: ${errors.join(" | ")}`);
+}
 
 const REFINE_SYSTEM = `You are a world-class editor. Your subject is Sooraj Ram ~ a mid-20s Indian writer, consumer insights professional, and contrarian thinker. You know his voice deeply.
 
@@ -89,93 +133,52 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "messages array required" });
   }
 
-  const provider = process.env.AI_PROVIDER || "openrouter";
-  const config = PROVIDERS[provider];
-  if (!config) return res.status(500).json({ error: `Unknown provider: ${provider}` });
-
-  const apiKey = process.env[config.keyEnv];
-  if (!apiKey) return res.status(500).json({ error: `Missing API key for ${provider}` });
-
   try {
     // ── Retrieve relevant knowledge chunks ───────────────────────────────────
     let retrievedContext = "";
     if (mode !== "refine") {
       const lastUserMsg = [...messages].filter(m => m.role === "user").slice(-1)[0]?.content || "";
-      if (lastUserMsg.length > 10) {
+      if (lastUserMsg.length > 5) {
         const chunks = await retrieveRelevantChunks(lastUserMsg, 4);
         if (chunks.length > 0) {
-          retrievedContext = `\n\n## From Sooraj's actual writing (retrieved for this question):\n${chunks.map((c, i) => `[${i+1}] ${c}`).join("\n\n")}`;
+          retrievedContext = `\n\n## Retrieved from Sooraj's actual writing ~ treat as ground truth:\n${chunks.map((c, i) => `[${i+1}] ${c}`).join("\n\n")}`;
         }
       }
     }
+
+    // ── Refine mode ──────────────────────────────────────────────────────────
     if (mode === "refine") {
-      const response = await fetch(config.url, {
-        method: "POST",
-        headers: config.headers(apiKey),
-        body: JSON.stringify({
-          model: config.model,
-          messages: [
-            { role: "system", content: REFINE_SYSTEM },
-            ...messages
-          ],
-          max_tokens: 2500,
-          temperature: 0.6
-        })
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        return res.status(response.status).json({ error: `Provider error: ${errText}` });
-      }
-
-      const data = await response.json();
-      const reply = data.choices?.[0]?.message?.content;
-      if (!reply) return res.status(500).json({ error: "No response from model" });
+      const reply = await callAI(
+        [{ role: "system", content: REFINE_SYSTEM }, ...messages],
+        2500, 0.6
+      );
       return res.status(200).json({ reply });
     }
 
+    // ── All other modes ──────────────────────────────────────────────────────
     let systemPrompt = SYSTEM_PROMPT + "\n\n" + CHAT_BALANCE + retrievedContext;
 
     if (humorPref === "yes") {
-      systemPrompt += `\n\n## Humor: ON — deadpan observational humour is expected. Weave it in naturally across the conversation.`;
+      systemPrompt += `\n\n## Humor: ON — deadpan observational humour expected. Weave naturally.`;
     } else if (humorPref === "no") {
-      systemPrompt += `\n\n## Humor: OFF — direct and grounded. Only if genuinely irresistible.`;
+      systemPrompt += `\n\n## Humor: OFF — direct and grounded only.`;
     }
 
     if (mode === "recommend") {
       const articleContext = ARTICLES.map(a =>
-        `- "${a.title}" (${a.source}) | Tags: ${a.tags.join(", ")} | ${a.summary} | Mood: ${a.mood} | URL: ${a.url}`
+        `- "${a.title}" (${a.source}) | Tags: ${a.tags.join(", ")} | ${a.summary} | URL: ${a.url}`
       ).join("\n");
-      systemPrompt += `\n\n## Article Corpus\nRecommend from this list. Prioritise philosophical/personal unless they ask for professional content. Always include the URL.\n\n${articleContext}`;
+      systemPrompt += `\n\n## Articles\nRecommend from this list. Prioritise philosophical/personal unless asked otherwise. Always include URL.\n\n${articleContext}`;
     }
 
     if (mode === "professional") {
-      systemPrompt += `\n\n## Professional mode — likely a recruiter or collaborator. Lead with the Consumer Proxy story (conceived 2023, a startup built the same idea and raised Rs 53Cr in Oct 2025). Confidence not humility. Real impact, no fluff. Only use verified facts.`;
+      systemPrompt += `\n\n## Professional mode — recruiter or collaborator. Lead with Consumer Proxy story (Rs 53Cr raised on same idea in Oct 2025). Confidence not humility. Verified facts only.`;
     }
 
-    const response = await fetch(config.url, {
-      method: "POST",
-      headers: config.headers(apiKey),
-      body: JSON.stringify({
-        model: config.model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages
-        ],
-        max_tokens: 1000,
-        temperature: 0.8
-      })
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      return res.status(response.status).json({ error: `Provider error: ${errText}` });
-    }
-
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content;
-    if (!reply) return res.status(500).json({ error: "No response from model" });
-
+    const reply = await callAI(
+      [{ role: "system", content: systemPrompt }, ...messages],
+      1000, 0.8
+    );
     return res.status(200).json({ reply });
 
   } catch (err) {

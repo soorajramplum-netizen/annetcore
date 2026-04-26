@@ -30,7 +30,7 @@ const MODES = {
 };
 
 const REFINE_PASSWORD = "parkwaydrive";
-const PROFESSIONAL_PASSWORD = "iwanttointerviewthisperson";
+const PROFESSIONAL_PASSWORD = "hired";
 const FEED_PASSWORD = "9567083285";
 
 function ThinkingText() {
@@ -53,6 +53,7 @@ export default function Annet() {
   const [professionalUnlocked, setProfessionalUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState(false);
+  const [refineInstructions, setRefineInstructions] = useState("");
   const [companyInput, setCompanyInput] = useState("");
   const [companySet, setCompanySet] = useState("");
   const [humorPref, setHumorPref] = useState(null);
@@ -83,6 +84,7 @@ export default function Annet() {
     setError(null);
     setLastDraft("");
     setRefineFeedback("");
+    setRefineInstructions("");
   }, [mode]);
 
   const autoResize = () => {
@@ -154,12 +156,16 @@ export default function Annet() {
     finally { setFeedLoading(false); }
   };
 
-  const handleSync = async () => {
+  const handleSync = async (mode = "recent") => {
     setSyncLoading(true); setSyncResult(null);
     try {
-      const res = await fetch("/api/sync", { method: "POST" });
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode })
+      });
       const data = await res.json();
-      setSyncResult(`Sync done ~ ${data.ingested} new, ${data.skipped} already known${data.errors > 0 ? `, ${data.errors} errors` : ""}.`);
+      setSyncResult(`${mode === "full" ? "Full sync" : "Recent sync"} done ~ ${data.ingested} new, ${data.skipped} already known${data.errors > 0 ? `, ${data.errors} errors` : ""}.`);
     } catch { setSyncResult("Sync failed ~ try again."); }
     finally { setSyncLoading(false); }
   };
@@ -189,7 +195,7 @@ export default function Annet() {
 
       const refineUserMessage = isRefineFeedback
         ? `Here is the article that needs further improvement:\n\n${baseContent}\n\n---\nSpecific feedback to apply:\n${text}\n\nRewrite the full article incorporating this feedback precisely. Output the improved article only.`
-        : `Transform this raw draft into a publish-ready article in Sooraj's voice:\n\n${text}`;
+        : `Transform this raw draft into a publish-ready article in Sooraj's voice.${refineInstructions.trim() ? `\n\nSpecial instructions from Sooraj:\n${refineInstructions.trim()}` : ""}\n\nDraft:\n${text}`;
 
       const apiMessages = mode === "refine"
         ? [{ role: "user", content: refineUserMessage }]
@@ -1273,13 +1279,19 @@ export default function Annet() {
                   <div className="feed-section">
                     <div className="feed-section-label">Auto-sync</div>
                     <div className="feed-section-body">Runs daily at 2am and picks up new posts from your blog and Medium automatically. You don't need to do anything.</div>
-                    <div className="feed-row">
+                    <div className="feed-row" style={{marginTop:"10px"}}>
                       <span className="feed-source">lifein20s.home.blog</span>
                       <span className="feed-source">medium.com/@nytt_liv</span>
                     </div>
-                    <button className="feed-btn" onClick={handleSync} disabled={syncLoading}>
-                      {syncLoading ? "Syncing..." : "↻ Run sync now"}
-                    </button>
+                    <div style={{display:"flex", gap:"8px", marginTop:"12px", flexWrap:"wrap"}}>
+                      <button className="feed-btn" onClick={() => handleSync("recent")} disabled={syncLoading}>
+                        {syncLoading ? "Syncing..." : "↻ Sync last 10"}
+                      </button>
+                      <button className="feed-btn" onClick={() => handleSync("full")} disabled={syncLoading} style={{borderColor:"var(--accent-dim)", color:"var(--accent)"}}>
+                        {syncLoading ? "Syncing..." : "↻ Full sync (all articles)"}
+                      </button>
+                    </div>
+                    <p style={{fontSize:"11px", color:"var(--text-dim)", marginTop:"8px"}}>Full sync pulls every article ever written. Run once. After that, last 10 is enough.</p>
                     {syncResult && <p className="feed-success">{syncResult}</p>}
                   </div>
 
@@ -1342,6 +1354,21 @@ export default function Annet() {
                 </div>
               ) : (
               <p className="empty-intro">{MODES[mode].intro}</p>
+              {mode === "refine" && (
+                <div style={{width:"100%", marginBottom:"16px"}}>
+                  <div style={{fontSize:"10px", letterSpacing:"0.08em", textTransform:"uppercase", color:"var(--accent-dim)", marginBottom:"8px"}}>
+                    Special instructions (optional)
+                  </div>
+                  <textarea
+                    className="input-textarea"
+                    value={refineInstructions}
+                    onChange={e => setRefineInstructions(e.target.value)}
+                    placeholder="e.g. keep it under 500 words, add subheadings, make it more punchy, write for LinkedIn..."
+                    rows={2}
+                    style={{width:"100%", background:"var(--surface)", border:"1px solid var(--border)", borderRadius:"3px", padding:"8px 10px", resize:"vertical", fontSize:"13px"}}
+                  />
+                </div>
+              )}
               )}
               {mode === "chat" && (
                 <div className="empty-hints">
@@ -1430,6 +1457,13 @@ export default function Annet() {
                   >Last output</button>
                 </div>
               </div>
+              <textarea
+                value={refineInstructions}
+                onChange={e => setRefineInstructions(e.target.value)}
+                placeholder="Special instructions ~ e.g. under 500 words, punchier, add subheadings..."
+                rows={1}
+                style={{width:"100%", background:"none", border:"none", borderBottom:"1px solid var(--border)", color:"var(--text)", fontFamily:"var(--font-mono)", fontSize:"12px", padding:"6px 0", outline:"none", resize:"none", marginBottom:"8px"}}
+              />
               <div className="input-wrap">
                 <textarea
                   ref={textareaRef}
