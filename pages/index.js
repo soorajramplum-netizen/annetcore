@@ -1353,6 +1353,7 @@ export default function Annet() {
                   {feedError && <p className="feed-error" style={{marginTop:"16px"}}>✗ {feedError}</p>}
                 </div>
               ) : (
+              <>
               <p className="empty-intro">{MODES[mode].intro}</p>
               {mode === "refine" && (
                 <div style={{width:"100%", marginBottom:"16px"}}>
@@ -1369,6 +1370,7 @@ export default function Annet() {
                   />
                 </div>
               )}
+              </>
               )}
               {mode === "chat" && (
                 <div className="empty-hints">
