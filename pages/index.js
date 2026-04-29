@@ -75,6 +75,15 @@ export default function Annet() {
   const passwordRef = useRef(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") === "professional" && params.get("key") === "hired") {
+      setMode("professional");
+      setProfessionalUnlocked(true);
+    }
+  }, []);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
@@ -728,6 +737,132 @@ export default function Annet() {
           font-style: italic;
         }
 
+        /* Letters of recommendation */
+        .lor-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .lor-card {
+          border: 1px solid var(--border);
+          border-radius: 3px;
+          padding: 14px 16px;
+        }
+
+        .lor-from {
+          font-size: 11px;
+          color: var(--accent);
+          letter-spacing: 0.04em;
+          margin-bottom: 10px;
+          font-weight: 500;
+        }
+
+        .lor-quotes {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-bottom: 12px;
+        }
+
+        .lor-quote {
+          font-size: 12px;
+          color: var(--text-mid);
+          background: rgba(255,255,255,0.03);
+          border: 1px solid var(--border-light);
+          border-radius: 2px;
+          padding: 3px 8px;
+          font-style: italic;
+          line-height: 1.5;
+        }
+
+        .lor-btn {
+          display: inline-block;
+          font-family: var(--font-mono);
+          font-size: 11px;
+          color: var(--text-dim);
+          border: 1px solid var(--border);
+          border-radius: 2px;
+          padding: 4px 12px;
+          text-decoration: none;
+          transition: all 0.15s ease;
+        }
+
+        .lor-btn:hover { color: var(--accent); border-color: var(--accent-dim); }
+
+        /* Share link */
+        .share-link-box {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 3px;
+          padding: 8px 12px;
+        }
+
+        .share-link-text {
+          font-size: 11px;
+          color: var(--text-dim);
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .share-copy-btn {
+          background: none;
+          border: 1px solid var(--border);
+          color: var(--text-dim);
+          font-family: var(--font-mono);
+          font-size: 11px;
+          padding: 4px 12px;
+          cursor: pointer;
+          border-radius: 2px;
+          flex-shrink: 0;
+          transition: all 0.15s ease;
+        }
+
+        .share-copy-btn:hover { color: var(--accent); border-color: var(--accent-dim); }
+
+        /* Fun projects cell */
+        .fun-cell { grid-column: 1 / -1; }
+
+        .fun-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 4px;
+        }
+
+        .fun-link {
+          display: flex;
+          align-items: baseline;
+          gap: 10px;
+          text-decoration: none;
+          padding: 4px 0;
+          border-bottom: 1px solid var(--border-light);
+          transition: all 0.15s ease;
+        }
+
+        .fun-link:last-child { border-bottom: none; }
+        .fun-link:hover .fun-name { color: var(--accent); }
+
+        .fun-name {
+          font-size: 12px;
+          color: var(--text-mid);
+          white-space: nowrap;
+          flex-shrink: 0;
+          transition: color 0.15s ease;
+        }
+
+        .fun-note {
+          font-size: 11px;
+          color: var(--text-dim);
+          font-style: italic;
+          line-height: 1.5;
+        }
+
         /* Achievement list */
         .achieve-list {
           display: flex;
@@ -1134,42 +1269,21 @@ export default function Annet() {
                   <div className="pro-name">Sooraj Ram</div>
                   <div className="pro-title">Consumer Insights & Analytics · Brand Strategy · EIR</div>
 
-                  {/* HEADLINE */}
+                  {/* DID YOU KNOW */}
                   <div className="pro-section">
-                    <div className="pro-section-label">The one thing to know</div>
+                    <div className="pro-section-label" style={{color:"var(--accent)"}}>Did you know?</div>
                     <div className="pro-section-body">
-                      In 2023, Sooraj conceived "Consumer Proxy" ~ a first-principles framework for AI-led whitespace discovery in FMCG. He built a quasi-PoC. Two years later, an independent FMCG-tech startup built the same idea from scratch and raised <strong style={{color:"var(--accent)"}}>Rs 53 Crore</strong> in Oct 2025. The idea existed first. That's the kind of thinking he brings to work.
+                      In 2023, Sooraj conceived "Consumer Proxy" ~ a novel framework for AI-led whitespace discovery in FMCG and built a quasi-PoC around it. Two years later, an independent FMCG-tech startup built the exact same idea from scratch and raised <strong style={{color:"var(--accent)"}}>Rs 53 Crore</strong> in Oct 2025. The idea existed first ~ that's the kind of thinking he brings to every room he's in.
                     </div>
                   </div>
 
                   <div className="pro-divider" />
 
-                  {/* SUMMARY */}
+                  {/* IN SHORT */}
                   <div className="pro-section">
                     <div className="pro-section-label">In short</div>
                     <div className="pro-section-body">
-                      Engineer by training, marketer by practice. 5 years 3 months full-time + 2 years 7 months as a freelance consultant during college ~ clientele across 7 countries. Built <strong style={{color:"var(--text)"}}>24 data-led capabilities (19 PoCs)</strong> across organisations, turning data → insight → action → revenue. Currently at Sweet Karam Coffee functioning as an EIR for the CEO ~ owning everything from product roadmap to launch to post-launch performance.
-                    </div>
-                  </div>
-
-                  <div className="pro-divider" />
-
-                  {/* KEY ACHIEVEMENTS */}
-                  <div className="pro-section">
-                    <div className="pro-section-label">Achievements that stand out</div>
-                    <div className="achieve-list">
-                      {[
-                        "Earned Rs 10.54L during college ~ running marketing research & growth projects across 7 countries, parallelly managing studies",
-                        "Promoted to Team Lead at Better Mortgage in under a year of joining as an Analyst ~ led 12 franchises as Senior Associate at ZoomRx shortly after",
-                        "Set up Consumer Insights from scratch at Traya ~ first person in the role. Led 2 new brand launches: Mool (Health) & Clear Ritual (Skin)",
-                        "Built a quick product testing framework at Rs 0 cost at CavinKare ~ and a D2C NPD Playbook adopted across the team",
-                        "University topper: CGPA 9.39/10 · 100% in two semesters · Academic excellence award 8 times across 4 years · 99th percentile in English nationally"
-                      ].map((a, i) => (
-                        <div key={i} className="achieve-item">
-                          <span className="achieve-dot">◆</span>
-                          <span>{a}</span>
-                        </div>
-                      ))}
+                      Engineer by training, marketer by choice ~ keen on solving problems, building brands and growth systems, all while keeping consumers at the centre. Fortunate to have done this across all stages, channels and categories (idea stage to 2000Cr+, traditional FMCG to digital, foods to toiletries) and built the consumer insights division from scratch in 3 organisations. Along the way, set up 20+ capabilities ~ including Consumer Proxy. Lately engaged in finding whitespaces and building tools to fill them: 12 built, 2 ready to commercialise. Working with 11 companies across 7 countries before graduating gave him a headstart ~ close to 3 years of experience before his degree, and now close to 8 years total.
                     </div>
                   </div>
 
@@ -1182,7 +1296,7 @@ export default function Annet() {
                       {[
                         { role: "Consumer & Market Intelligence", org: "Sweet Karam Coffee", period: "May '25 – Present", note: "EIR for CEO · Product roadmap · Brand · Growth · CMI CoE" },
                         { role: "Consumer Insights, Category", org: "Plum", period: "Mar '25 – May '25", note: "Market entry · Trendspotting · Path2Purchase · TrendScore" },
-                        { role: "Consumer Insights Lead, Brand", org: "Traya", period: "May '24 – Mar '25", note: "Built insights team · 2 brand launches · Acquisition & retention" },
+                        { role: "Consumer Insights Lead, Brand", org: "Traya", period: "May '24 – Mar '25", note: "Built insights team from scratch · 2 brand launches · Acquisition & retention" },
                         { role: "Consumer Insights & Analytics", org: "CavinKare", period: "Dec '22 – May '24", note: "Qual + Quant · D2C/Ecom · Insights Engine · NPD Playbook" },
                         { role: "Senior Associate, Market Research", org: "ZoomRx", period: "Jun '22 – Dec '22", note: "Led 12 franchises · Feasibility analysis · Consulting support" },
                         { role: "Team Lead, Ops Intelligence", org: "Better Mortgage Corporation", period: "Sept '20 – Jun '22", note: "Promoted to lead in under a year" },
@@ -1223,18 +1337,67 @@ export default function Annet() {
 
                   <div className="pro-divider" />
 
+                  {/* LETTERS OF RECOMMENDATION */}
+                  <div className="pro-section">
+                    <div className="pro-section-label">Letters of recommendation</div>
+                    <div className="lor-list">
+                      {[
+                        {
+                          from: "Co-Founder & CEO, Sweet Karam Coffee",
+                          quotes: ["rare combination of curiosity, ownership, and execution excellence", "unique blend of skills that is uncommon at his stage", "grow into a high-impact leader"],
+                          url: "https://drive.google.com/drive/folders/1lUutg6InCYcSFOs3punVGBs-7hWjL48w"
+                        },
+                        {
+                          from: "Founder, Raindus Beauty",
+                          quotes: ["easiest 'yes' I've ever said as a CEO", "near obsessive focus on understanding business fundamentals", "zoom in on executional details & zoom out to look at market reality, all within one conversation"],
+                          url: "https://drive.google.com/drive/folders/1lUutg6InCYcSFOs3punVGBs-7hWjL48w"
+                        },
+                        {
+                          from: "Head of Innovation Marketing, CavinKare",
+                          quotes: ["The Whiz Kid", "Legend in D2C & ECom", "razor sharp execution", "master storyteller with data"],
+                          url: "https://drive.google.com/drive/folders/1lUutg6InCYcSFOs3punVGBs-7hWjL48w"
+                        },
+                        {
+                          from: "Head of Consumer Insights, CavinKare",
+                          quotes: ["high level of professionalism, reliability, and innovation", "truly an asset to any organisation that you work for"],
+                          url: "https://drive.google.com/drive/folders/1lUutg6InCYcSFOs3punVGBs-7hWjL48w"
+                        },
+                        {
+                          from: "Head of Finance, CavinKare",
+                          quotes: ["throughout my 34-year career, I've rarely met someone like him", "exceptional skill in extracting insights", "highly adaptable to change"],
+                          url: "https://drive.google.com/drive/folders/1lUutg6InCYcSFOs3punVGBs-7hWjL48w"
+                        }
+                      ].map((lor, i) => (
+                        <div key={i} className="lor-card">
+                          <div className="lor-from">{lor.from}</div>
+                          <div className="lor-quotes">
+                            {lor.quotes.map((q, j) => (
+                              <span key={j} className="lor-quote">"{q}"</span>
+                            ))}
+                          </div>
+                          <a href={lor.url} target="_blank" rel="noopener noreferrer" className="lor-btn">
+                            View letter ↗
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pro-divider" />
+
                   {/* TOOLS */}
                   <div className="pro-section">
                     <div className="pro-section-label">Tools he has built</div>
                     <div className="pro-section-body" style={{marginBottom:"14px", fontSize:"12px", color:"var(--text-dim)"}}>
-                      Built independently ~ each one solving a gap he spotted from inside the industry.
+                      Built independently ~ each one solving a gap he spotted from inside the industry. 12 built, 2 ready to commercialise.
                     </div>
                     <div className="tools-grid">
                       {[
                         { name:"Right Copywriter", url:"https://right-copywriter.vercel.app/", problem:"AI generates text, not content. Most copy tools have no understanding of why people buy.", solution:"Behavioural science engine trained on 62 cognitive biases ~ writes copy that sells, not just sounds good." },
                         { name:"Adroit", url:"https://adroit-alpha.vercel.app/", problem:"People buy through System 1 thinking. Scripts rarely cater to that part of the brain.", solution:"Second-by-second, shoot-ready scripts grounded in behavioural science with brand asset integration." },
                         { name:"South or Not", url:"https://southproud.vercel.app/", problem:"Product ideas are easy, especially now. But most aren't consumer-rooted. 10 launches, 1 success if lucky.", solution:"Science-led product intelligence suite for South Indian food ~ end-to-end from concept to shelf." },
-                        { name:"Soul Scape", url:"https://soulscape-site.vercel.app/", problem:"People struggle to find the right place to go ~ and even more so once they get there.", solution:"Spotify-like mood discovery for travel + Duolingo-style trip planning that handholds from discovery to destination." }
+                        { name:"Soul Scape", url:"https://soulscape-site.vercel.app/", problem:"People struggle to find the right place to go ~ and even more so once they get there.", solution:"Spotify-like mood discovery for travel + Duolingo-style trip planning that handholds from discovery to destination." },
+                        { name:"Marketing BS Detector", url:"https://marketingbschecker2.vercel.app/", problem:"99% of LinkedIn marketing content is noise. Untrained people talking marketing to other untrained people ~ the BS compounds.", solution:"Checks claims against peer-reviewed research and evidence from respected marketers. Self-learning module in the works." },
                       ].map(tool => (
                         <a key={tool.name} href={tool.url} target="_blank" rel="noopener noreferrer" className="tool-card">
                           <div className="tool-name">{tool.name} ↗</div>
@@ -1242,8 +1405,25 @@ export default function Annet() {
                           <div className="tool-row"><span className="tool-label">Solution</span><span className="tool-text">{tool.solution}</span></div>
                         </a>
                       ))}
+                      {/* Fun projects ~ single cell */}
+                      <div className="tool-card fun-cell">
+                        <div className="tool-name">Fun Projects</div>
+                        <div className="fun-list">
+                          {[
+                            { name:"Thala for a Reason", url:"https://www.thalaforareason.lovable.app/", note:"You'll know if you follow cricket / IPL" },
+                            { name:"Swaflora", url:"https://swaflora.lovable.app", note:"Because asking out online shouldn't be boring" },
+                            { name:"Boredom Math", url:"https://boredom-solver-math.lovable.app", note:"Number plate math from his commute, turned into a game" },
+                            { name:"Virtual Dessert", url:"https://ajithascreations.lovable.app", note:"Built as a gift for a kid hosting her first dessert website" },
+                            { name:"reinVENT", url:"https://reinventyou.lovable.app", note:"Started to help a friend struggling with PMS / mood swings" },
+                          ].map((f, i) => (
+                            <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" className="fun-link">
+                              <span className="fun-name">{f.name} ↗</span>
+                              <span className="fun-note">{f.note}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    <p className="tool-footnote">+ 10 more built for fun ~ including one called <em>Marketing BS Detector</em>. Make of that what you will.</p>
                   </div>
 
                   <div className="pro-divider" />
@@ -1267,6 +1447,23 @@ export default function Annet() {
                       <button className="password-btn" onClick={handleCompanySubmit}>Set</button>
                     </div>
                     {companySet && <p style={{fontSize:"11px", color:"var(--accent-dim)", marginTop:"8px"}}>Got it ~ asking in context of {companySet}.</p>}
+                  </div>
+
+                  <div className="pro-divider" />
+
+                  {/* SHAREABLE LINK */}
+                  <div className="pro-section">
+                    <div className="pro-section-label">Share without password</div>
+                    <div className="pro-section-body" style={{marginBottom:"10px"}}>
+                      Send this link ~ they land directly on the Professional tab, no password needed.
+                    </div>
+                    <div className="share-link-box">
+                      <span className="share-link-text">{typeof window !== "undefined" ? `${window.location.origin}?tab=professional&key=hired` : "Loading..."}</span>
+                      <button className="share-copy-btn" onClick={() => {
+                        const link = `${window.location.origin}?tab=professional&key=hired`;
+                        navigator.clipboard.writeText(link);
+                      }}>Copy</button>
+                    </div>
                   </div>
 
                   <p className="pro-ask-hint">Ask anything about his work, approach, or experience.</p>
