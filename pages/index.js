@@ -1345,27 +1345,27 @@ export default function Annet() {
                         {
                           from: "Co-Founder & CEO, Sweet Karam Coffee",
                           quotes: ["rare combination of curiosity, ownership, and execution excellence", "unique blend of skills that is uncommon at his stage", "grow into a high-impact leader"],
-                          url: "https://drive.google.com/drive/folders/1lUutg6InCYcSFOs3punVGBs-7hWjL48w"
+                          url: "https://drive.google.com/file/d/1uR9HrjeDK_cbio1thFGb-I9VHh1HPwna/view?usp=drive_link"
                         },
                         {
                           from: "Founder, Raindus Beauty",
                           quotes: ["easiest 'yes' I've ever said as a CEO", "near obsessive focus on understanding business fundamentals", "zoom in on executional details & zoom out to look at market reality, all within one conversation"],
-                          url: "https://drive.google.com/drive/folders/1lUutg6InCYcSFOs3punVGBs-7hWjL48w"
+                          url: "https://drive.google.com/file/d/1ujAoD1kFPkHknas1FJ5OoXFeYSPtZdI4/view?usp=drive_link"
                         },
                         {
                           from: "Head of Innovation Marketing, CavinKare",
                           quotes: ["The Whiz Kid", "Legend in D2C & ECom", "razor sharp execution", "master storyteller with data"],
-                          url: "https://drive.google.com/drive/folders/1lUutg6InCYcSFOs3punVGBs-7hWjL48w"
+                          url: "https://drive.google.com/file/d/1kTZeix8XxjGQ3gwA3RN2pFOhF590K0a8/view?usp=drive_link"
                         },
                         {
                           from: "Head of Consumer Insights, CavinKare",
                           quotes: ["high level of professionalism, reliability, and innovation", "truly an asset to any organisation that you work for"],
-                          url: "https://drive.google.com/drive/folders/1lUutg6InCYcSFOs3punVGBs-7hWjL48w"
+                          url: "https://drive.google.com/file/d/1gPyg_YUZSZeEzmo0dmmUs8FYDP4erYaK/view?usp=drive_link"
                         },
                         {
                           from: "Head of Finance, CavinKare",
                           quotes: ["throughout my 34-year career, I've rarely met someone like him", "exceptional skill in extracting insights", "highly adaptable to change"],
-                          url: "https://drive.google.com/drive/folders/1lUutg6InCYcSFOs3punVGBs-7hWjL48w"
+                          url: "https://drive.google.com/file/d/1nnkkpCg9reKt2ZRQnP8-wpxvBF7sJqiU/view?usp=drive_link"
                         }
                       ].map((lor, i) => (
                         <div key={i} className="lor-card">
