@@ -80,6 +80,7 @@ export default function Annet() {
     if (params.get("tab") === "professional" && params.get("key") === "hired") {
       setMode("professional");
       setProfessionalUnlocked(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, []);
 
@@ -1234,6 +1235,18 @@ export default function Annet() {
             ))}
           </nav>
         </header>
+
+        {/* Intro banner */}
+        <div style={{
+          fontSize: "12px",
+          color: "var(--text-dim)",
+          padding: "8px 0 4px",
+          borderBottom: "1px solid var(--border-light)",
+          marginBottom: "4px",
+          lineHeight: "1.5"
+        }}>
+          Annet is Sooraj's digital twin ~ talk to him, read his writing, or explore his professional work.
+        </div>
 
         {/* Messages */}
         <div className="messages">
