@@ -746,43 +746,81 @@ export default function Annet() {
           font-style: italic;
         }
 
-        /* Letters of recommendation */
-        .lor-list {
+        /* Highlights list */
+        .highlights-list {
           display: flex;
           flex-direction: column;
           gap: 12px;
         }
 
+        .highlight-item {
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+        }
+
+        .highlight-dot {
+          color: var(--accent-dim);
+          font-size: 13px;
+          flex-shrink: 0;
+          margin-top: 1px;
+          font-family: var(--font-mono);
+        }
+
+        .highlight-text {
+          font-size: 13px;
+          color: var(--text-mid);
+          line-height: 1.65;
+        }
+
+        /* Letters of recommendation */
+        .lor-list {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+          .lor-list { grid-template-columns: 1fr; }
+        }
+
         .lor-card {
           border: 1px solid var(--border);
           border-radius: 3px;
-          padding: 14px 16px;
+          padding: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          background: var(--surface);
+          transition: border-color 0.15s ease;
         }
+
+        .lor-card:hover { border-color: var(--accent-dim); }
 
         .lor-from {
           font-size: 11px;
           color: var(--accent);
           letter-spacing: 0.04em;
-          margin-bottom: 10px;
           font-weight: 500;
+          line-height: 1.4;
         }
 
         .lor-quotes {
           display: flex;
-          flex-wrap: wrap;
+          flex-direction: column;
           gap: 6px;
-          margin-bottom: 12px;
+          flex: 1;
         }
 
         .lor-quote {
           font-size: 12px;
           color: var(--text-mid);
           background: rgba(255,255,255,0.03);
-          border: 1px solid var(--border-light);
-          border-radius: 2px;
-          padding: 3px 8px;
+          border-left: 2px solid var(--accent-dim);
+          padding: 4px 10px;
           font-style: italic;
           line-height: 1.5;
+          border-radius: 0 2px 2px 0;
         }
 
         .lor-btn {
@@ -795,6 +833,8 @@ export default function Annet() {
           padding: 4px 12px;
           text-decoration: none;
           transition: all 0.15s ease;
+          align-self: flex-start;
+          margin-top: 4px;
         }
 
         .lor-btn:hover { color: var(--accent); border-color: var(--accent-dim); }
@@ -1290,21 +1330,25 @@ export default function Annet() {
                   <div className="pro-name">Sooraj Ram</div>
                   <div className="pro-title">Consumer Insights & Analytics · Brand Strategy · EIR</div>
 
-                  {/* DID YOU KNOW */}
+                  {/* HIGHLIGHTS */}
                   <div className="pro-section">
-                    <div className="pro-section-label" style={{color:"var(--accent)"}}>Did you know?</div>
-                    <div className="pro-section-body">
-                      In 2023, Sooraj conceived "Consumer Proxy" ~ a novel framework for AI-led whitespace discovery in FMCG and built a quasi-PoC around it. Two years later, an independent FMCG-tech startup built the exact same idea from scratch and raised <strong style={{color:"var(--accent)"}}>Rs 53 Crore</strong> in Oct 2025. The idea existed first ~ that's the kind of thinking he brings to every room he's in.
+                    <div className="pro-section-label" style={{color:"var(--accent)", lineHeight:"1.6", fontStyle:"italic", fontSize:"13px", letterSpacing:"0", textTransform:"none", fontWeight:"400", marginBottom:"16px"}}>
+                      Sooraj prefers to let his work speak for itself, but as his digital twin, I think it's only fair to give you the highlights he's too modest to mention ~
                     </div>
-                  </div>
-
-                  <div className="pro-divider" />
-
-                  {/* IN SHORT */}
-                  <div className="pro-section">
-                    <div className="pro-section-label">In short</div>
-                    <div className="pro-section-body">
-                      Engineer by training, marketer by choice ~ keen on solving problems, building brands and growth systems, all while keeping consumers at the centre. Fortunate to have done this across all stages, channels and categories (idea stage to 2000Cr+, traditional FMCG to digital, foods to toiletries) and built the consumer insights division from scratch in 3 organisations. Along the way, set up 20+ capabilities ~ including Consumer Proxy. Lately engaged in finding whitespaces and building tools to fill them: 12 built, 2 ready to commercialise. Working with 11 companies across 7 countries before graduating gave him a headstart ~ close to 3 years of experience before his degree, and now close to 8 years total.
+                    <div className="highlights-list">
+                      {[
+                        "Earned > 10L while in college, parallely managing studies (9.39 / 10 CGPA & University topper) by building a business model from scratch following the Ideate, Launch, Iterate & Outrun thesis.",
+                        "Engineer by training, but marketer by choice ~ has worked across all stages of a company (from idea stage to 2000Cr+), across all categories (from food to toiletries), selling in all channels (from Quick Commerce to Kirana), and across all functions (from NPD to Last mile) ~ solving problems by keeping consumer in mind.",
+                        "Built \"Consumer Proxy\" in 2023, a process to cut down the innovation cycle by half & launching the products that sell (instead of the spray & pray strategy) ~ at that time, no company had this framework. Two years later, a startup raised Rs 53Cr built on the same idea. (he wasn't sad that he missed the boat, instead happy that he foresaw & thought in the right direction)",
+                        "First hire & set up consumer insights division in three firms (Traya. Plum. Sweet Karam Coffee) ~ all while working closely with the founders: built an insight to action & then revenue model that the startups can thrive on.",
+                        "Consulted an idea stage startup & built a 1Cr MRR model ~ incorporating marketing spends & product strategy. The startup which was on the market for more than a year, finally got a soft commitment from a renowned VC firm.",
+                        "Has built over 20+ capabilities, hosted more than 12 tools ~ out of which 2 are ready to be commercialised.",
+                      ].map((item, i) => (
+                        <div key={i} className="highlight-item">
+                          <span className="highlight-dot">~</span>
+                          <span className="highlight-text">{item}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -1330,18 +1374,6 @@ export default function Annet() {
                           </div>
                           <div className="exp-org">{e.org}{e.note ? ` · ${e.note}` : ""}</div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="pro-divider" />
-
-                  {/* PROFICIENCIES */}
-                  <div className="pro-section">
-                    <div className="pro-section-label">Proficiencies</div>
-                    <div className="pro-tags">
-                      {["Consumer Insights", "Brand Strategy", "Data Literacy", "Behavioural Science", "Qual + Quant", "Category Management", "D2C & Ecom", "Market Entry", "NPD & Launch", "Analytical Frameworks", "Trendspotting", "Comms Strategy"].map(t => (
-                        <span key={t} className="pro-tag">{t}</span>
                       ))}
                     </div>
                   </div>
