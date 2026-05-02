@@ -72,6 +72,7 @@ export default function Annet() {
   const [syncResult, setSyncResult] = useState(null); // "original" | "generated"
   const bottomRef = useRef(null);
   const messagesRef = useRef(null);
+  const skipScrollRef = useRef(false);
   const textareaRef = useRef(null);
   const passwordRef = useRef(null);
 
@@ -79,16 +80,19 @@ export default function Annet() {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("tab") === "professional" && params.get("key") === "hired") {
+      skipScrollRef.current = true;
       setMode("professional");
       setProfessionalUnlocked(true);
-      // Scroll the inner messages container to top after content renders
+      // After state settles and content renders, snap to top
       setTimeout(() => {
         if (messagesRef.current) messagesRef.current.scrollTop = 0;
-      }, 50);
+        skipScrollRef.current = false;
+      }, 150);
     }
   }, []);
 
   useEffect(() => {
+    if (skipScrollRef.current) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
