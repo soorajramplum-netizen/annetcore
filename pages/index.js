@@ -1463,7 +1463,7 @@ export default function Annet() {
                         <div className="tool-name">Fun Projects</div>
                         <div className="fun-list">
                           {[
-                            { name:"Thala for a Reason", url:"https://www.thalaforareason.lovable.app/", note:"You'll know if you follow cricket / IPL" },
+                            { name:"Thala for a Reason", url:"https://thalaforareason.lovable.app/", note:"You'll know if you follow cricket / IPL" },
                             { name:"Swaflora", url:"https://swaflora.lovable.app", note:"Because asking out online shouldn't be boring" },
                             { name:"Boredom Math", url:"https://boredom-solver-math.lovable.app", note:"Number plate math from his commute, turned into a game" },
                             { name:"Virtual Dessert", url:"https://ajithascreations.lovable.app", note:"Built as a gift for a kid hosting her first dessert website" },
