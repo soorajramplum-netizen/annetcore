@@ -71,6 +71,7 @@ export default function Annet() {
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncResult, setSyncResult] = useState(null); // "original" | "generated"
   const bottomRef = useRef(null);
+  const messagesRef = useRef(null);
   const textareaRef = useRef(null);
   const passwordRef = useRef(null);
 
@@ -80,7 +81,10 @@ export default function Annet() {
     if (params.get("tab") === "professional" && params.get("key") === "hired") {
       setMode("professional");
       setProfessionalUnlocked(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Scroll the inner messages container to top after content renders
+      setTimeout(() => {
+        if (messagesRef.current) messagesRef.current.scrollTop = 0;
+      }, 50);
     }
   }, []);
 
@@ -1249,7 +1253,7 @@ export default function Annet() {
         </div>
 
         {/* Messages */}
-        <div className="messages">
+        <div className="messages" ref={messagesRef}>
           {(mode === "refine" && !refineUnlocked) || (mode === "professional" && !professionalUnlocked) || (mode === "feed" && !feedUnlocked) ? (
             <div className="password-gate">
               <p className="password-gate-title">
