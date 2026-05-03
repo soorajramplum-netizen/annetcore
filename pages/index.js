@@ -839,6 +839,22 @@ export default function Annet() {
 
         .lor-btn:hover { color: var(--accent); border-color: var(--accent-dim); }
 
+        .resume-btn {
+          display: inline-block;
+          font-family: var(--font-mono);
+          font-size: 11px;
+          color: var(--accent);
+          border: 1px solid var(--accent-dim);
+          border-radius: 2px;
+          padding: 5px 14px;
+          text-decoration: none;
+          margin-top: 14px;
+          transition: all 0.15s ease;
+          opacity: 0.85;
+        }
+
+        .resume-btn:hover { opacity: 1; background: rgba(255,255,255,0.04); }
+
         /* Share link */
         .share-link-box {
           display: flex;
@@ -1354,42 +1370,6 @@ export default function Annet() {
 
                   <div className="pro-divider" />
 
-                  {/* EXPERIENCE */}
-                  <div className="pro-section">
-                    <div className="pro-section-label">Experience</div>
-                    <div className="exp-list">
-                      {[
-                        { role: "Consumer & Market Intelligence", org: "Sweet Karam Coffee", period: "May '25 – Present", note: "EIR for CEO · Product roadmap · Brand · Growth · CMI CoE" },
-                        { role: "Consumer Insights, Category", org: "Plum", period: "Mar '25 – May '25", note: "Market entry · Trendspotting · Path2Purchase · TrendScore" },
-                        { role: "Consumer Insights Lead, Brand", org: "Traya", period: "May '24 – Mar '25", note: "Built insights team from scratch · 2 brand launches · Acquisition & retention" },
-                        { role: "Consumer Insights & Analytics", org: "CavinKare", period: "Dec '22 – May '24", note: "Qual + Quant · D2C/Ecom · Insights Engine · NPD Playbook" },
-                        { role: "Senior Associate, Market Research", org: "ZoomRx", period: "Jun '22 – Dec '22", note: "Led 12 franchises · Feasibility analysis · Consulting support" },
-                        { role: "Team Lead, Ops Intelligence", org: "Better Mortgage Corporation", period: "Sept '20 – Jun '22", note: "Promoted to lead in under a year" },
-                        { role: "R&D Project Intern", org: "ISRO", period: "Jan '20 – Feb '20", note: "" },
-                      ].map((e, i) => (
-                        <div key={i} className="exp-item">
-                          <div className="exp-top">
-                            <span className="exp-role">{e.role}</span>
-                            <span className="exp-period">{e.period}</span>
-                          </div>
-                          <div className="exp-org">{e.org}{e.note ? ` · ${e.note}` : ""}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="pro-divider" />
-
-                  {/* EDUCATION */}
-                  <div className="pro-section">
-                    <div className="pro-section-label">Education</div>
-                    <div className="pro-section-body">
-                      B.Tech Mechanical Engineering · APJ Abdul Kalam Technological University · CGPA 9.39/10 · University topper S5 & S8 (10/10) · Academic excellence award 8 times · 99th percentile English · 96th percentile Quantitative (Advanced)
-                    </div>
-                  </div>
-
-                  <div className="pro-divider" />
-
                   {/* LETTERS OF RECOMMENDATION */}
                   <div className="pro-section">
                     <div className="pro-section-label">Letters of recommendation</div>
@@ -1433,6 +1413,45 @@ export default function Annet() {
                           </a>
                         </div>
                       ))}
+                    </div>
+                  </div>
+
+                  <div className="pro-divider" />
+
+                  {/* EXPERIENCE */}
+                  <div className="pro-section">
+                    <div className="pro-section-label">Experience</div>
+                    <div className="exp-list">
+                      {[
+                        { role: "Consumer & Market Intelligence", org: "Sweet Karam Coffee", period: "May '25 – Present", note: "EIR for CEO · Product roadmap · Brand · Growth · CMI CoE" },
+                        { role: "Consumer Insights, Category", org: "Plum", period: "Mar '25 – May '25", note: "Market entry · Trendspotting · Path2Purchase · TrendScore" },
+                        { role: "Consumer Insights Lead, Brand", org: "Traya", period: "May '24 – Mar '25", note: "Built insights team from scratch · 2 brand launches · Acquisition & retention" },
+                        { role: "Consumer Insights & Analytics", org: "CavinKare", period: "Dec '22 – May '24", note: "Qual + Quant · D2C/Ecom · Insights Engine · NPD Playbook" },
+                        { role: "Senior Associate, Market Research", org: "ZoomRx", period: "Jun '22 – Dec '22", note: "Led 12 franchises · Feasibility analysis · Consulting support" },
+                        { role: "Team Lead, Ops Intelligence", org: "Better Mortgage Corporation", period: "Sept '20 – Jun '22", note: "Promoted to lead in under a year" },
+                        { role: "R&D Project Intern", org: "ISRO", period: "Jan '20 – Feb '20", note: "" },
+                      ].map((e, i) => (
+                        <div key={i} className="exp-item">
+                          <div className="exp-top">
+                            <span className="exp-role">{e.role}</span>
+                            <span className="exp-period">{e.period}</span>
+                          </div>
+                          <div className="exp-org">{e.org}{e.note ? ` · ${e.note}` : ""}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <a href="https://drive.google.com/file/d/1KSREpxYKkTkObJ09UVgERqsgqbNjLmuL/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="resume-btn">
+                      View full résumé ↗
+                    </a>
+                  </div>
+
+                  <div className="pro-divider" />
+
+                  {/* EDUCATION */}
+                  <div className="pro-section">
+                    <div className="pro-section-label">Education</div>
+                    <div className="pro-section-body">
+                      B.Tech Mechanical Engineering · APJ Abdul Kalam Technological University · CGPA 9.39/10 · University topper S5 & S8 (10/10) · Academic excellence award 8 times · 99th percentile English · 96th percentile Quantitative (Advanced)
                     </div>
                   </div>
 
